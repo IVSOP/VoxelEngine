@@ -62,6 +62,14 @@ include_directories(external/stb)
 
 add_executable(VoxelEngine
 		src/main.cpp
+		src/common.cpp
+		src/GLErrors.cpp
+		src/Shader.cpp
+		src/TextureArray.cpp
+		src/Engine.cpp
+		src/Renderer.cpp
+		src/InputHandler.cpp
+		src/Material.cpp
 		src/windows/windows_unistd.cpp
 
 		external/imgui/imgui.cpp
