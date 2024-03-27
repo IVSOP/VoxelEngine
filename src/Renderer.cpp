@@ -136,13 +136,14 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 		// !!!!!!!!!!! the first 3 bytes of this uint will be the position, the remaining one will be the normal
 		GLuint vertex_position_and_normal_layout = 1;
 		GLCall(glEnableVertexAttribArray(vertex_position_and_normal_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_position_and_normal_layout, 1, GL_INT, GL_FALSE, sizeof(Quad), (const void *)offsetof(Quad, position_and_normal)));
+		// WHAT THE FUCK????? why do I have to use glVertexAttribIPointer????????? and not glVertexAttribPointer????????????????// who tf designed this
+		GLCall(glVertexAttribIPointer(vertex_position_and_normal_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, position_and_normal)));
 		GLCall(glVertexAttribDivisor(vertex_position_and_normal_layout, 1)); // values are per instance
 
 		// !!!!!!!!!!! only the first byte has data
 		GLuint vertex_matid_layout = 2;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_INT, GL_FALSE, sizeof(Quad), (const void *)offsetof(Quad, material_id)));
+		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, material_id)));
 		GLCall(glVertexAttribDivisor(vertex_matid_layout, 1)); // values are per instance
 	}
 
@@ -316,7 +317,8 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
-	Quad firstQuad = Quad({2, 0, 0}, 4, 5);
+	// Quad firstQuad = Quad({1, 0, 0}, 2, 3);
+	Quad firstQuad = Quad({3, 0, 0}, 0, 0);
 	std::vector<Quad> quads = std::vector<Quad>();
 	quads.push_back(firstQuad);
 	ImGui::Text("pos: %u(0x%08x) %u(0x%08x) %u(0x%08x)\n", firstQuad.getPosition().x, firstQuad.getPosition().x, firstQuad.getPosition().y, firstQuad.getPosition().y, firstQuad.getPosition().z, firstQuad.getPosition().z);

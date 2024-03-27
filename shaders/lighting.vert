@@ -29,19 +29,17 @@ void main()
 */
 
 	// decode data from the attributes
-	int position_x = (aPosAndNormal & 0xFF000000) >> 24;
-	int position_y = (aPosAndNormal & 0x00FF0000) >> 16;
-	int position_z = (aPosAndNormal & 0x0000FF00) >> 8;
-	int normal = 	  aPosAndNormal & 0x000000FF;
+	int position_x = (aPosAndNormal >> 24) & 0x000000FF;
+	int position_y = (aPosAndNormal >> 16) & 0x000000FF;
+	int position_z = (aPosAndNormal >> 8)  & 0x000000FF;
+	int normal = 	  aPosAndNormal        & 0x000000FF;
 
-	int materialID = (aMaterialID & 0xFF000000) >> 24;
+	int materialID = (aMaterialID >> 24) & 0x000000FF;
 
 
 	int chunkID = 0;
 	vec3 position_in_chunk = vec3(float(position_x), float(position_y), float(position_z));
-	// vec4 position = vec4(position_in_chunk + aPos, 1.0);
-	vec4 position = vec4(aPos, 1.0);
-	position.x += position_z;
+	vec4 position = vec4(position_in_chunk + aPos, 1.0);
 
 	gl_Position = u_Projection * u_View * u_Model * position;
 }
