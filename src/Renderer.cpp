@@ -312,9 +312,15 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::Checkbox("Show axis", &showAxis);
 }
 
-void Renderer::drawLighting(std::vector<Quad> &quads, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
+
+	Quad firstQuad = Quad({2, 0, 0}, 4, 5);
+	std::vector<Quad> quads = std::vector<Quad>();
+	quads.push_back(firstQuad);
+	ImGui::Text("pos: %u(0x%08x) %u(0x%08x) %u(0x%08x)\n", firstQuad.getPosition().x, firstQuad.getPosition().x, firstQuad.getPosition().y, firstQuad.getPosition().y, firstQuad.getPosition().z, firstQuad.getPosition().z);
+
 
 	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
@@ -323,7 +329,7 @@ void Renderer::drawLighting(std::vector<Quad> &quads, const glm::mat4 &projectio
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 		GLCall(glBindVertexArray(this->VAO));
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->base_vertexBuffer)); // is this needed??????????
+		// GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->base_vertexBuffer)); // is this needed??????????
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
 
 		// load vertices

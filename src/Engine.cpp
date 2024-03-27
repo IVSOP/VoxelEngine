@@ -156,10 +156,6 @@ void glfw_error_callback(int error, const char* description)
 }
 
 Engine::Engine() {
-	Quad firstQuad = Quad({0, 0, -2}, 4, 5);
-	this->quads = std::vector<Quad>();
-	quads.push_back(firstQuad);
-
 	this->windowWidth = 1920;
     this->windowHeight = 1080;
 

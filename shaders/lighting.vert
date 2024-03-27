@@ -41,6 +41,7 @@ void main()
 	vec3 position_in_chunk = vec3(float(position_x), float(position_y), float(position_z));
 	// vec4 position = vec4(position_in_chunk + aPos, 1.0);
 	vec4 position = vec4(aPos, 1.0);
+	position.x += position_z;
 
 	gl_Position = u_Projection * u_View * u_Model * position;
 }
