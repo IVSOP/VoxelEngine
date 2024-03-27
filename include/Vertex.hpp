@@ -19,6 +19,17 @@
 //     Vertex() = default;
 // };
 
+struct InstanceVertex {
+	glm::vec3 coords;
+	glm::vec2 tex_coords;
+
+	InstanceVertex(const glm::vec3 &coords, const glm::vec2 &tex_coords)
+	: coords(coords), tex_coords(tex_coords) {}
+
+	InstanceVertex(GLfloat x, GLfloat y, GLfloat z, GLfloat u, GLfloat v)
+	: coords(x, y, z), tex_coords(u, v) {}
+};
+
 struct AxisVertex { // to draw the axis
 	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);

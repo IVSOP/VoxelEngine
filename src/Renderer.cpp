@@ -114,18 +114,25 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	GLCall(glGenBuffers(1, &this->base_vertexBuffer));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->base_vertexBuffer));
 	{
-		const GLfloat baseVertices[] = {
-			-1.0f, -1.0f, 0.0f,
-			1.0f, -1.0f, 0.0f,
-			1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 0.0f,
-			-1.0f, 1.0f, 0.0f,
-			-1.0f, -1.0f, 0.0f
+		const InstanceVertex baseVertices[] = {
+			// position            // tex coords
+			{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f},
+			{ 1.0f, -1.0f, 0.0f, 1.0f, 0.0f},
+			{ 1.0f,  1.0f, 0.0f, 1.0f, 1.0f},
+			{ 1.0f,  1.0f, 0.0f, 1.0f, 1.0f},
+			{-1.0f,  1.0f, 0.0f, 0.0f, 1.0f},
+			{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f}
 		};
 		GLuint vertex_position_layout = 0;
 		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, 0));
+		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceVertex), (const void *)offsetof(InstanceVertex, coords)));
 		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // these valuse are constant every vertex
+
+		GLuint vertex_texcoord_layout = 1;
+		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_position_layout, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceVertex), (const void *)offsetof(InstanceVertex, tex_coords)));
+		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // these valuse are constant every vertex
+
 		GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(baseVertices), baseVertices, GL_STATIC_DRAW));
 	}
 
@@ -134,14 +141,14 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 	{
 		// !!!!!!!!!!! the first 3 bytes of this uint will be the position, the remaining one will be the normal
-		GLuint vertex_position_and_normal_layout = 1;
+		GLuint vertex_position_and_normal_layout = 2;
 		GLCall(glEnableVertexAttribArray(vertex_position_and_normal_layout));					// size appart				// offset
 		// WHAT THE FUCK????? why do I have to use glVertexAttribIPointer????????? and not glVertexAttribPointer????????????????// who tf designed this
 		GLCall(glVertexAttribIPointer(vertex_position_and_normal_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, position_and_normal)));
 		GLCall(glVertexAttribDivisor(vertex_position_and_normal_layout, 1)); // values are per instance
 
 		// !!!!!!!!!!! only the first byte has data
-		GLuint vertex_matid_layout = 2;
+		GLuint vertex_matid_layout = 3;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
 		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, material_id)));
 		GLCall(glVertexAttribDivisor(vertex_matid_layout, 1)); // values are per instance
