@@ -26,6 +26,15 @@ void main()
 32 bits {
 	8 - material id
 }
+
+normal {
+	0 - y (bottom)
+	1 + y (top)
+	2 - z (far)
+	3 + z (near)
+	4 - x (left)
+	5 + x (right)
+}
 */
 
 	// decode data from the attributes
@@ -37,13 +46,45 @@ void main()
 
 	int materialID = (aMaterialID >> 24) & 0x000000FF;
 
+	// position inside chunk, added to default position
+	vec3 position = aPos;
 
+	// rotate it depending on normal
+	// there are probably better ways to do this
+	switch(normal) {
+		case 0:
+			position.yz = position.zy;
+			break;
+		case 1:
+			position.z = 1.0 - position.y;
+			position.y = 1.0;
+			break;
+		case 2:
+			// the default vertices are already in the right place, but rotated completely incorrectly
+			position.x = 1.0 - position.x;
+			break;
+		case 3:
+			// just bring it foward
+			position.z = 1.0;
+			break;
+		case 4:
+			position.xyz = position.zyx;
+			break;
+		case 5:
+			position.z = 1.0 - position.x;
+			position.x = 1.0;
+			break;
+	}
+
+	position += vec3(float(position_x), float(position_y), float(position_z));
+
+
+
+	// add the position of the chunk itself
 	float chunk_position_x = 0.0;
 	float chunk_position_y = 0.0;
 	float chunk_position_z = 0.0;
+	position += vec3(chunk_position_x, chunk_position_y, chunk_position_z);
 
-	vec3 position_in_chunk = vec3(float(position_x) + chunk_position_x, float(position_y) + chunk_position_y, float(position_z) + chunk_position_z);
-	vec4 position = vec4(position_in_chunk + aPos, 1.0);
-
-	gl_Position = u_Projection * u_View * u_Model * position;
+	gl_Position = u_Projection * u_View * u_Model * vec4(position, 1.0);
 }

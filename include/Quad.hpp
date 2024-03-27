@@ -8,7 +8,7 @@ struct Quad {
 	GLint material_id = 0;
 
 	Quad(const glm::uvec3 &pos, GLint normal, GLubyte _material_id) {
-		position_and_normal = (pos.x << 24) & 0xFF000000 | (pos.y << 16) & 0x00FF0000 | (pos.z << 8) & 0x0000FF00 | normal & 0x000000FF;
+		position_and_normal = ((pos.x << 24) & 0xFF000000) | ((pos.y << 16) & 0x00FF0000) | ((pos.z << 8) & 0x0000FF00) | (normal & 0x000000FF);
 
 		material_id |= (_material_id << 24);
 	}

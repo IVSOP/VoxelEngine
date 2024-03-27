@@ -4,25 +4,26 @@
 #define CHUNK_SIZE 32
 
 #include "common.hpp"
-#include <array>
+#include "Quad.hpp"
+#include <vector>
 
-// very similar to a Quad, but it is more flexible to use a diferent struct. also does not contain length
-// I will still use the weid bitshifts since I plan on having many voxels and saving space is always good
 struct Voxel {
-	GLint position_and_normal = 0;
-	GLint material_id = 0;
+	GLint material_id;
 
-	Voxel(const glm::uvec3 &pos, GLint normal, GLubyte _material_id) {
-		position_and_normal = (pos.x << 24) & 0xFF000000 | (pos.y << 16) & 0x00FF0000 | (pos.z << 8) & 0x0000FF00 | normal & 0x000000FF;
+	Voxel() : material_id(-1) {}
+	Voxel(GLint material_id) : material_id(material_id) {}
 
-		material_id |= (_material_id << 24);
+	bool isEmpty() const {
+		if (material_id < 0) return true;
+		return false;
 	}
-
 };
 
 struct Chunk {
 	// 3D array, [y][z][x] (height, depth, width). this can easily be moved around to test what gets better cache performance
 	Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+	bool quadsHaveChanged = false;
+	std::vector<Quad> quads; // I suspect that most chunks will have empty space so I use a vector. idk how bad this is, memory will be extremely sparse. maybe using a fixed size array here will be better, need to test
 
 	Voxel &getVoxelAt(const glm::uvec3 &pos) {
 		return voxels[pos.y][pos.z][pos.x];
@@ -30,6 +31,46 @@ struct Chunk {
 
 	void insertVoxelAt(const glm::uvec3 &pos, const Voxel &voxel) {
 		voxels[pos.y][pos.z][pos.x] = voxel;
+		quadsHaveChanged = true;
+	}
+
+	bool isEmptyAt(const glm::uvec3 &pos) {
+		return voxels[pos.y][pos.z][pos.x].isEmpty();
+	}
+
+	std::vector<Quad> getQuads() {
+		if (quadsHaveChanged) {
+			rebuildQuads();
+		}
+		return this->quads;
+	}
+
+	void addQuadsTo(std::vector<Quad> &_quads) {
+		if (quadsHaveChanged) {
+			rebuildQuads();
+		}
+		_quads.insert(_quads.end(), this->quads.begin(), this->quads.end()); // idk
+	}
+
+	void rebuildQuads() {
+		quadsHaveChanged = false;
+		quads.clear(); // pray that this does not change the capacity
+		// very simple algorithm for now
+		for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+			for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+				for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+					const Voxel &voxel = voxels[y][z][x];
+					if (! voxel.isEmpty()) {
+						quads.emplace_back(glm::uvec3(x, y, z), 0, voxel.material_id);
+						quads.emplace_back(glm::uvec3(x, y, z), 1, voxel.material_id);
+						quads.emplace_back(glm::uvec3(x, y, z), 2, voxel.material_id);
+						quads.emplace_back(glm::uvec3(x, y, z), 3, voxel.material_id);
+						quads.emplace_back(glm::uvec3(x, y, z), 4, voxel.material_id);
+						quads.emplace_back(glm::uvec3(x, y, z), 5, voxel.material_id);
+					}
+				}
+			}
+		}
 	}
 };
 

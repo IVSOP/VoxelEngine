@@ -116,12 +116,12 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	{
 		const InstanceVertex baseVertices[] = {
 			// position            // tex coords
-			{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f},
-			{ 1.0f, -1.0f, 0.0f, 1.0f, 0.0f},
+			{ 0.0f,  0.0f, 0.0f, 0.0f, 0.0f},
+			{ 1.0f,  0.0f, 0.0f, 1.0f, 0.0f},
 			{ 1.0f,  1.0f, 0.0f, 1.0f, 1.0f},
 			{ 1.0f,  1.0f, 0.0f, 1.0f, 1.0f},
-			{-1.0f,  1.0f, 0.0f, 0.0f, 1.0f},
-			{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f}
+			{ 0.0f,  1.0f, 0.0f, 0.0f, 1.0f},
+			{ 0.0f,  0.0f, 0.0f, 0.0f, 0.0f}
 		};
 		GLuint vertex_position_layout = 0;
 		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
@@ -324,17 +324,15 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
-	// Quad firstQuad = Quad({1, 0, 0}, 2, 3);
-	Quad firstQuad = Quad({3, 0, 0}, 0, 0);
-	std::vector<Quad> quads = std::vector<Quad>();
-	quads.push_back(firstQuad);
-	ImGui::Text("pos: %u(0x%08x) %u(0x%08x) %u(0x%08x)\n", firstQuad.getPosition().x, firstQuad.getPosition().x, firstQuad.getPosition().y, firstQuad.getPosition().y, firstQuad.getPosition().z, firstQuad.getPosition().z);
-
+	Chunk chunk;
+	Voxel voxel = Voxel(0);
+	chunk.insertVoxelAt(glm::uvec3(0, 0, 0), voxel);
+	std::vector<Quad> quads = chunk.getQuads();
 
 	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 		GLCall(glBindVertexArray(this->VAO));
@@ -445,7 +443,6 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 
 		// lightingShader.validate();
 
-		// GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, quads.size()))
 
 
@@ -453,7 +450,7 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
 
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 }
 
 void Renderer::bloomBlur(int passes) {

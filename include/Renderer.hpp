@@ -2,7 +2,7 @@
 #define RENDERER_H
 
 #include "common.hpp"
-#include "Quad.hpp"
+#include "Chunk.hpp"
 #include "Camera.hpp"
 #include "Shader.hpp"
 #include "TextureArray.hpp"
