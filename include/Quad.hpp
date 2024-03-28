@@ -5,12 +5,12 @@
 // you can think of this as Vertex, but I found it confusing since I am using instances (basically I rather think about drawing instances rather than drawing vertices)
 struct Quad {
 	GLint position_and_normal = 0;
-	GLint material_id = 0;
+	GLint material_and_chunkid = 0;
 
-	Quad(const glm::uvec3 &pos, GLint normal, GLubyte _material_id) {
+	Quad(const glm::uvec3 &pos, GLint normal, GLubyte _material_id, GLubyte _chunk_id) {
 		position_and_normal = ((pos.x << 24) & 0xFF000000) | ((pos.y << 16) & 0x00FF0000) | ((pos.z << 8) & 0x0000FF00) | (normal & 0x000000FF);
 
-		material_id |= (_material_id << 24);
+		material_and_chunkid = ((_material_id << 24) & 0xFF000000) | ((_chunk_id << 16) & 0x00FF0000);
 	}
 
 	glm::uvec3 getPosition() {

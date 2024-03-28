@@ -7,6 +7,7 @@
 #include "Material.hpp"
 #include "Camera.hpp"
 
+// I know full well how cursed this is
 #define TEX_ARRAY_SLOT 0
 #define BRIGHT_TEXTURE_SLOT 1
 #define SCENE_TEXTURE_SLOT 2
@@ -14,6 +15,7 @@
 #define POINTLIGHT_TEXTURE_BUFFER_SLOT 4
 #define DIRLIGHT_TEXTURE_BUFFER_SLOT 5
 #define SPOTLIGHT_TEXTURE_BUFFER_SLOT 6
+#define CHUNKINFO_TEXTURE_BUFFER_SLOT 7
 
 #define MAX_MATERIALS 8
 #define MAX_LIGHTS 8
@@ -116,12 +118,12 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	{
 		const InstanceVertex baseVertices[] = {
 			// position            // tex coords
-			{ 0.0f,  0.0f, 0.0f, 0.0f, 0.0f},
-			{ 1.0f,  0.0f, 0.0f, 1.0f, 0.0f},
-			{ 1.0f,  1.0f, 0.0f, 1.0f, 1.0f},
-			{ 1.0f,  1.0f, 0.0f, 1.0f, 1.0f},
-			{ 0.0f,  1.0f, 0.0f, 0.0f, 1.0f},
-			{ 0.0f,  0.0f, 0.0f, 0.0f, 0.0f}
+			glm::vec3(0.0f, 0.0f, 0.0f),//  0.0f, 0.0f},
+			glm::vec3(1.0f, 0.0f, 0.0f),//  1.0f, 0.0f},
+			glm::vec3(1.0f, 1.0f, 0.0f),//  1.0f, 1.0f},
+			glm::vec3(1.0f, 1.0f, 0.0f),//  1.0f, 1.0f},
+			glm::vec3(0.0f, 1.0f, 0.0f),//  0.0f, 1.0f},
+			glm::vec3(0.0f, 0.0f, 0.0f) //  0.0f, 0.0f}
 		};
 		GLuint vertex_position_layout = 0;
 		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
@@ -150,7 +152,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 		// !!!!!!!!!!! only the first byte has data
 		GLuint vertex_matid_layout = 2;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
-		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, material_id)));
+		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, material_and_chunkid)));
 		GLCall(glVertexAttribDivisor(vertex_matid_layout, 1)); // values are per instance
 	}
 
@@ -202,12 +204,18 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	lightingShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 
 
-	//////////////////////////// load textures with info on materials and lights
+	//////////////////////////// load textures with info on materials and lights and chunk info
 	GLCall(glGenBuffers(1, &materialBuffer));
 	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
 	GLCall(glGenTextures(1, &materialTBO));
 	GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
 	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture
+
+	GLCall(glGenBuffers(1, &chunkInfoBuffer));
+	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, chunkInfoBuffer));
+	GLCall(glGenTextures(1, &chunkInfoTBO));
+	GLCall(glBindTexture(GL_TEXTURE_BUFFER, chunkInfoTBO));
+	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, chunkInfoBuffer)); // bind the buffer to the texture
 
 	GLCall(glGenBuffers(1, &pointLightBuffer));
 	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, pointLightBuffer));
@@ -321,26 +329,15 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::Checkbox("Show axis", &showAxis);
 }
 
-void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const std::vector<Quad> &quads, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
-
-	Chunk chunk;
-	for (GLuint y = 0; y < 32; y++) {
-		for (GLuint z = 0; z < 32; z++) {
-			for (GLuint x = 0; x < 32; x++) {
-				Voxel voxel = Voxel(0);
-				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
-			}
-		}
-	}
-	std::vector<Quad> quads = chunk.getQuads();
 
 	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+		// glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 		GLCall(glBindVertexArray(this->VAO));
 		// GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->base_vertexBuffer)); // is this needed??????????
@@ -441,6 +438,14 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
 		lightingShader.setInt("u_NumSpotLights", 0);
+
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, chunkInfoBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, chunkInfo.size() * sizeof(ChunkInfo), chunkInfo.data(), GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + CHUNKINFO_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, chunkInfoTBO));
+		lightingShader.setInt("u_ChunkInfoTBO", CHUNKINFO_TEXTURE_BUFFER_SLOT);
+
 
 		// bind the render buffer to this FBO (maybe this is missing actualy binding it, idk, but it gets regenerated automatically when screen is resized)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);
@@ -554,10 +559,10 @@ void Renderer::endFrame(GLFWwindow * window) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::draw(std::vector<Quad> &quads, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const std::vector<Quad> &quads, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(quads, projection, view, camera);
+	drawLighting(quads, chunkInfo, projection, view, camera);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 

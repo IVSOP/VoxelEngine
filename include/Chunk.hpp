@@ -19,7 +19,19 @@ struct Voxel {
 	}
 };
 
+// struct sent to gpu in the chunk TBO
+struct ChunkInfo {
+	glm::vec3 position;
+
+	GLfloat padding_1;
+	
+	ChunkInfo() : position(0.0f) {}
+	ChunkInfo(const glm::vec3 &position) : position(position) {};
+};
+
 struct Chunk {
+	GLuint ID = 0; // might get removed from here later
+
 	// 3D array, [y][z][x] (height, depth, width). this can easily be moved around to test what gets better cache performance
 	Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	bool quadsHaveChanged = false;
@@ -61,12 +73,12 @@ struct Chunk {
 				for (GLuint x = 0; x < CHUNK_SIZE; x++) {
 					const Voxel &voxel = voxels[y][z][x];
 					if (! voxel.isEmpty()) {
-						quads.emplace_back(glm::uvec3(x, y, z), 0, voxel.material_id);
-						quads.emplace_back(glm::uvec3(x, y, z), 1, voxel.material_id);
-						quads.emplace_back(glm::uvec3(x, y, z), 2, voxel.material_id);
-						quads.emplace_back(glm::uvec3(x, y, z), 3, voxel.material_id);
-						quads.emplace_back(glm::uvec3(x, y, z), 4, voxel.material_id);
-						quads.emplace_back(glm::uvec3(x, y, z), 5, voxel.material_id);
+						quads.emplace_back(glm::uvec3(x, y, z), 0, voxel.material_id, ID); // ............
+						quads.emplace_back(glm::uvec3(x, y, z), 1, voxel.material_id, ID); // ............
+						quads.emplace_back(glm::uvec3(x, y, z), 2, voxel.material_id, ID); // ............
+						quads.emplace_back(glm::uvec3(x, y, z), 3, voxel.material_id, ID); // ............
+						quads.emplace_back(glm::uvec3(x, y, z), 4, voxel.material_id, ID); // ............
+						quads.emplace_back(glm::uvec3(x, y, z), 5, voxel.material_id, ID); // ............
 					}
 				}
 			}

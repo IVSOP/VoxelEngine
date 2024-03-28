@@ -56,33 +56,6 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
     }
 }
 
-// void basicRenderLoop(GLFWwindow *window, Camera &camera, BasicRenderer &renderer) {
-// 	double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
-//     while (!glfwWindowShouldClose(window)) {
-//         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
-
-//         lastFrameTime = glfwGetTime();
-//         int windowWidth = xmlParser.getWindowWidth();
-//         int windowHeight = xmlParser.getWindowHeight();
-
-//         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
-//         inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
-
-
-//         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-//         // auto s = draw_points.size();
-//         // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-//         renderer.draw(draw_points, projection, camera, window);
-//         lock.unlock();
-
-//         currentFrameTime = glfwGetTime();
-//         deltaTime = currentFrameTime - lastFrameTime;
-//         lastFrameTime = currentFrameTime;
-
-//         // no need for sleep, vsync takes care of mantaining timings
-//     }
-// }
-
 void Engine::renderLoop() {
     double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
     while (!glfwWindowShouldClose(window)) {
@@ -94,9 +67,10 @@ void Engine::renderLoop() {
         inputHandler.get()->applyToCamera(*camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
-        std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
-        lock.unlock();
+        // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+        // renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
+		renderer.get()->draw(world.get()->getQuads(), world.get()->getInfo(), projection, *camera.get(), window, deltaTime);
+        // lock.unlock();
 
         currentFrameTime = glfwGetTime();
         deltaTime = currentFrameTime - lastFrameTime;
@@ -249,9 +223,9 @@ Engine::Engine() {
     // MSAA
     // glEnable(GL_MULTISAMPLE);
 
-    GLdouble cameraXPos = 0;
-    GLdouble cameraYPos = 0;
-    GLdouble cameraZPos = 1;
+    GLdouble cameraXPos = 64;
+    GLdouble cameraYPos = 64;
+    GLdouble cameraZPos = 64;
     GLdouble cameraXLook = 0;
     GLdouble cameraYLook = 0;
     GLdouble cameraZLook = 0;
@@ -282,7 +256,19 @@ Engine::Engine() {
 
     setWindow(window, static_cast<GLdouble>(this->windowWidth), static_cast<GLdouble>(this->windowHeight));
 
-    draw_quads = quads; // early copy to allow renderer to display something
+    // draw_quads = quads; // early copy to allow renderer to display something
+
+
+	Chunk chunk;
+	for (GLuint y = 0; y < 32; y++) {
+		for (GLuint z = 0; z < 32; z++) {
+			for (GLuint x = 0; x < 32; x++) {
+				Voxel voxel = Voxel(0);
+				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
+			}
+		}
+	}
+	world.get()->copyChunkTo(chunk, glm::uvec3(10, 10, 0));
 }
 
 void Engine::loop() {

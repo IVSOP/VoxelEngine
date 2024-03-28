@@ -21,13 +21,16 @@
 
 struct InstanceVertex {
 	glm::vec3 coords;
-	glm::vec2 tex_coords;
+	// glm::vec2 tex_coords;
 
-	InstanceVertex(const glm::vec3 &coords, const glm::vec2 &tex_coords)
-	: coords(coords), tex_coords(tex_coords) {}
+	InstanceVertex(const glm::vec3 &coords)
+	: coords(coords) {}
 
-	InstanceVertex(GLfloat x, GLfloat y, GLfloat z, GLfloat u, GLfloat v)
-	: coords(x, y, z), tex_coords(u, v) {}
+	// InstanceVertex(const glm::vec3 &coords, const glm::vec2 &tex_coords)
+	// : coords(coords), tex_coords(tex_coords) {}
+
+	// InstanceVertex(GLfloat x, GLfloat y, GLfloat z, GLfloat u, GLfloat v)
+	// : coords(x, y, z), tex_coords(u, v) {}
 };
 
 struct AxisVertex { // to draw the axis

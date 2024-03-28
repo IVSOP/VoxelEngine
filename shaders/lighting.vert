@@ -6,12 +6,15 @@ layout(location = 0) in vec3 aPos; // position as a float of the default plane c
 // this is for every istance
 // could be uint, int for compatibility reasons or something, but the underlying data actually does not matter as long as it has 32 bits
 layout(location = 1) in int aPosAndNormal; // 3 first bytes are the actual data, xyz, the 1 remaining is the normal (0 - 6)
-layout(location = 2) in int aMaterialID; // only the first byte actually has the data
+layout(location = 2) in int aMaterialAndChunkID; // only the first byte actually has the data
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 uniform mat3 u_NormalMatrix; // since it is constant every single vertex
+
+uniform samplerBuffer u_ChunkInfoTBO;
+#define VEC4_IN_CHUNKINFO 1
 
 out VS_OUT {
 	vec2 v_TexCoord;
@@ -49,9 +52,10 @@ normal {
 	uint position_x = (aPosAndNormal >> 24) & 0x000000FF;
 	uint position_y = (aPosAndNormal >> 16) & 0x000000FF;
 	uint position_z = (aPosAndNormal >> 8)  & 0x000000FF;
-	uint normal = 	  aPosAndNormal        & 0x000000FF;
+	uint normal     =  aPosAndNormal        & 0x000000FF;
 
-	int materialID = (aMaterialID >> 24) & 0x000000FF;
+	int materialID = (aMaterialAndChunkID >> 24) & 0x000000FF;
+	int chunkID    = (aMaterialAndChunkID >> 16) & 0x000000FF;
 	vs_out.v_MaterialID = materialID;
 
 	// position inside chunk, added to default position
@@ -99,10 +103,8 @@ normal {
 	}
 
 	position += vec3(float(position_x), float(position_y), float(position_z));
-	float chunk_position_x = 0.0;
-	float chunk_position_y = 0.0;
-	float chunk_position_z = 0.0;
-	position += vec3(chunk_position_x, chunk_position_y, chunk_position_z);
+	vec3 chunk_position = texelFetch(u_ChunkInfoTBO, chunkID * VEC4_IN_CHUNKINFO).xyz;
+	position += vec3(chunk_position.x, chunk_position.y, chunk_position.z);
 
 	vec4 viewspace_pos = u_View * u_Model * vec4(position, 1.0);
 	vs_out.v_FragPos = vec3(viewspace_pos);

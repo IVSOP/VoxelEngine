@@ -151,7 +151,6 @@ void main() {
 	// apply texture at the end, merge colors
 	color = res_color * texture(u_TextureArraySlot, vec3(fs_in.v_TexCoord.xy, material.texture_id));
 
-
 	// extract bright colors into the separate color attachment
 	float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722)); // common approximation of luminance based on human perception of color (or so I'm told)
     if(brightness > u_BloomThreshold) {

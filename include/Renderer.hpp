@@ -18,8 +18,9 @@ public:
 	~Renderer();
 
 	GLsizei viewport_width, viewport_height;
-    
+
 	GLuint materialBuffer, materialTBO;
+	GLuint chunkInfoBuffer, chunkInfoTBO;
 	GLuint pointLightBuffer, pointLightTBO;
 	GLuint dirLightBuffer, dirLightTBO;
 	GLuint spotLightBuffer, spotLightTBO;
@@ -59,8 +60,7 @@ public:
 
 
 
-	// isto devia ser const vec mas nao foi por causa de encapsulamentos estupidos parabens aos envolvidos
-	void draw(std::vector<Quad> &quads, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
+	void draw(const std::vector<Quad> &quads, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime); // const
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
 
 	void loadTextures();
@@ -71,7 +71,7 @@ public:
 
 private:
 	void prepareFrame(Camera &camera, GLfloat deltatime);
-	void drawLighting(std::vector<Quad> &quads, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
+	void drawLighting(const std::vector<Quad> &quads, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
 	void bloomBlur(int passes);
 	void merge();
 	void endFrame(GLFWwindow * window);
