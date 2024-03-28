@@ -19,6 +19,7 @@ public:
 	void setFloat(const std::string &uniformName, GLfloat num);
 	void setVec3(const std::string &uniformName, const glm::vec3 &vec);
 	void setVec3(const std::string &uniformName, GLfloat x, GLfloat y, GLfloat z);
+	void setMat3(const std::string &uniformName, const glm::mat3 &mat);
 	void setMat4(const std::string &uniformName, const glm::mat4 &mat);
 
 	GLuint programID;

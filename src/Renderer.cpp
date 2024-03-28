@@ -128,10 +128,10 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceVertex), (const void *)offsetof(InstanceVertex, coords)));
 		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // these valuse are constant every vertex
 
-		GLuint vertex_texcoord_layout = 1;
-		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_position_layout, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceVertex), (const void *)offsetof(InstanceVertex, tex_coords)));
-		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // these valuse are constant every vertex
+		// GLuint vertex_texcoord_layout = 1;
+		// GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		// GLCall(glVertexAttribPointer(vertex_position_layout, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceVertex), (const void *)offsetof(InstanceVertex, tex_coords)));
+		// GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // these valuse are constant every vertex
 
 		GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(baseVertices), baseVertices, GL_STATIC_DRAW));
 	}
@@ -141,14 +141,14 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 	{
 		// !!!!!!!!!!! the first 3 bytes of this uint will be the position, the remaining one will be the normal
-		GLuint vertex_position_and_normal_layout = 2;
+		GLuint vertex_position_and_normal_layout = 1;
 		GLCall(glEnableVertexAttribArray(vertex_position_and_normal_layout));					// size appart				// offset
 		// WHAT THE FUCK????? why do I have to use glVertexAttribIPointer????????? and not glVertexAttribPointer????????????????// who tf designed this
 		GLCall(glVertexAttribIPointer(vertex_position_and_normal_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, position_and_normal)));
 		GLCall(glVertexAttribDivisor(vertex_position_and_normal_layout, 1)); // values are per instance
 
 		// !!!!!!!!!!! only the first byte has data
-		GLuint vertex_matid_layout = 3;
+		GLuint vertex_matid_layout = 2;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
 		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, material_id)));
 		GLCall(glVertexAttribDivisor(vertex_matid_layout, 1)); // values are per instance
@@ -294,6 +294,7 @@ void Renderer::loadTextures() {
 	tex->addTexture("textures/missing_texture.png"); // 0
 	tex->addTexture("textures/black.png"); // 1
 	tex->addTexture("textures/white.png"); // 2
+	tex->addTexture("textures/birch_planks.png"); // 3
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
 
@@ -325,14 +326,20 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 	// const glm::mat4 MVP = projection * view * model;
 
 	Chunk chunk;
-	Voxel voxel = Voxel(0);
-	chunk.insertVoxelAt(glm::uvec3(0, 0, 0), voxel);
+	for (GLuint y = 0; y < 32; y++) {
+		for (GLuint z = 0; z < 32; z++) {
+			for (GLuint x = 0; x < 32; x++) {
+				Voxel voxel = Voxel(0);
+				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
+			}
+		}
+	}
 	std::vector<Quad> quads = chunk.getQuads();
 
 	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 		GLCall(glBindVertexArray(this->VAO));
@@ -351,6 +358,7 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 		lightingShader.setMat4("u_Model", model);
 		lightingShader.setMat4("u_View", view);
 		lightingShader.setMat4("u_Projection", projection);
+		lightingShader.setMat3("u_NormalMatrix", glm::mat3(glm::transpose(glm::inverse(view * model))));
 
 		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
 
@@ -363,7 +371,7 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
 			glm::vec3(0.1f),
 			32.0f,
-			5
+			0
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
@@ -395,7 +403,8 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 
 		DirLight dirLights[MAX_LIGHTS];
 		dirLights[0] = {
-			.direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
+			// .direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
+			.direction = glm::normalize(glm::vec3(1.0f, 0.1f, 0.0f)),
 			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
 			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
 			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
@@ -407,7 +416,7 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, dirLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_DirLightTBO", DIRLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumDirLights", 0);
+		lightingShader.setInt("u_NumDirLights", 1);
 
 		SpotLight spotLights[MAX_LIGHTS];
 		spotLights[0] = {
@@ -450,7 +459,7 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
 
-		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 }
 
 void Renderer::bloomBlur(int passes) {

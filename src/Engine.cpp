@@ -263,7 +263,7 @@ Engine::Engine() {
 
 
 	this->windowFov = 90;
-    this->windowZNear = 1;
+    this->windowZNear = 0.1;
     this->windowZFar = 1000;
 
 

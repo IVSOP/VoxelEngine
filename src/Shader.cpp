@@ -84,3 +84,8 @@ void Shader::setMat4(const std::string &uniformName, const glm::mat4 &mat) {
 	GLint location = getUniformLocation(uniformName);
 	GLCall(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat)));
 }
+
+void Shader::setMat3(const std::string &uniformName, const glm::mat3 &mat) {
+	GLint location = getUniformLocation(uniformName);
+	GLCall(glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(mat)));
+}
