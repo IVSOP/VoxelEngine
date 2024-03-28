@@ -75,16 +75,16 @@ const ViewportVertex viewportVertices[] = {
 void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection) {
 	const AxisVertex vertices[] = {
 		// x
-		{-100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
-		{100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+		{-1000.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+		{1000.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
 
 		// y
-		{0.0f, -100.0f, 0.0f, 0.0f, 1.0f, 0.0f},
-		{0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+		{0.0f, -1000.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+		{0.0f, 1000.0f, 0.0f, 0.0f, 1.0f, 0.0f},
 
 		// z
-		{0.0f, 0.0f, -100.0f, 0.0f, 0.0f, 1.0f},
-		{0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 1.0f}
+		{0.0f, 0.0f, -1000.0f, 0.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 1000.0f, 0.0f, 0.0f, 1.0f}
 	};
 
 	// bind VAO, VBO
@@ -292,6 +292,8 @@ Renderer::~Renderer() {
 
 	GLCall(glDeleteFramebuffers(1, &lightingFBO));
 	GLCall(glDeleteFramebuffers(2, pingpongFBO));
+
+	// delete the TBOs????????????????????????????????????????????
 }
 
 void Renderer::loadTextures() {

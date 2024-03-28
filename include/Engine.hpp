@@ -42,7 +42,6 @@ struct World {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
 					chunks[x][y][z].addQuadsTo(vec);
-					chunks[x][y][z].ID = &chunks[x][y][z] - &chunks[0][0][0];// idc let the compiler sort this out
 				}
 			}
 		}
@@ -56,9 +55,9 @@ struct World {
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-					info[x][y][z] = ChunkInfo(32.0f * glm::vec3(x, y, z));
-					glm::vec3 idk = 32.0f * glm::vec3(x, y, z);
-					// printf("[%u][%u][%u]: %f %f %f\n", x, y, z, idk.x, idk.y, idk.z);
+					info[x][y][z] = ChunkInfo(32.0f * glm::vec3(static_cast<GLfloat>(x), static_cast<GLfloat>(y), static_cast<GLfloat>(z)));
+					chunks[x][y][z].ID = &chunks[x][y][z] - &chunks[0][0][0];// idc let the compiler sort this out
+					// printf("ID %u is in %f %f %f\n", chunks[x][y][z].ID, info[x][y][z].position.x, info[x][y][z].position.y, info[x][y][z].position.z);
 				}
 			}
 		}
@@ -69,8 +68,17 @@ struct World {
 	// }
 
 	void copyChunkTo(const Chunk &chunk, const glm::uvec3 position) {
+		// printf("\n\nThe id of the chunk in %u %u %u is %u. Its info position is %f %f %f\n\n",
+		// 	position.x, position.y, position.z,
+		// 	chunks[position.x][position.y][position.z].ID,
+		// 	info[position.x][position.y][position.z].position.x,
+		// 	info[position.x][position.y][position.z].position.y,
+		// 	info[position.x][position.y][position.z].position.z);
+		GLuint ID = chunks[position.x][position.y][position.z].ID;
 		chunks[position.x][position.y][position.z] = chunk;
-		chunks[position.x][position.y][position.z].ID = &chunks[position.x][position.y][position.z] - &chunks[0][0][0];
+		// for safety, so it applies new ID to all quads (ID was probably not defined, if it was then remove this)
+		chunks[position.x][position.y][position.z].ID = ID;
+		chunks[position.x][position.y][position.z].quadsHaveChanged = true;
 	}
 };
 

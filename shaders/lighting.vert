@@ -55,7 +55,7 @@ normal {
 	uint normal     =  aPosAndNormal        & 0x000000FF;
 
 	int materialID = (aMaterialAndChunkID >> 24) & 0x000000FF;
-	int chunkID    = (aMaterialAndChunkID >> 16) & 0x000000FF;
+	int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;
 	vs_out.v_MaterialID = materialID;
 
 	// position inside chunk, added to default position
@@ -78,7 +78,6 @@ normal {
 			vs_out.v_TexCoord = vec2(position_x / 31.0, 1.0 - (position_z / 31.0));
 			break;
 		case 2:
-			// the default vertices are already in the right place, but rotated completely incorrectly
 			position.x = 1.0 - position.x;
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, 1.0);
 			vs_out.v_TexCoord = vec2(position_x / 31.0, position_y / 31.0);
@@ -102,9 +101,8 @@ normal {
 			break;
 	}
 
-	position += vec3(float(position_x), float(position_y), float(position_z));
 	vec3 chunk_position = texelFetch(u_ChunkInfoTBO, chunkID * VEC4_IN_CHUNKINFO).xyz;
-	position += vec3(chunk_position.x, chunk_position.y, chunk_position.z);
+	position += vec3(float(position_x) + chunk_position.x, float(position_y) + 0, float(position_z) + 0);
 
 	vec4 viewspace_pos = u_View * u_Model * vec4(position, 1.0);
 	vs_out.v_FragPos = vec3(viewspace_pos);

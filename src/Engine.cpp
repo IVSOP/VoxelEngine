@@ -268,7 +268,9 @@ Engine::Engine() {
 			}
 		}
 	}
-	world.get()->copyChunkTo(chunk, glm::uvec3(10, 10, 0));
+	// world.get()->copyChunkTo(chunk, glm::uvec3(0, 0, 0));
+	world.get()->copyChunkTo(chunk, glm::uvec3(1, 0, 0));
+	// world.get()->copyChunkTo(chunk, glm::uvec3(0, 1, 0));
 }
 
 void Engine::loop() {

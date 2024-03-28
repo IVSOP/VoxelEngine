@@ -13,6 +13,7 @@ struct Voxel {
 	Voxel() : material_id(-1) {}
 	Voxel(GLint material_id) : material_id(material_id) {}
 
+	// this way I save memory, plus ints are aligned nicely
 	bool isEmpty() const {
 		if (material_id < 0) return true;
 		return false;
@@ -28,6 +29,7 @@ struct ChunkInfo {
 	ChunkInfo() : position(0.0f) {}
 	ChunkInfo(const glm::vec3 &position) : position(position) {};
 };
+static_assert(sizeof(ChunkInfo) == 1 * sizeof(glm::vec4), "Error: ChunkInfo has unexpected size");
 
 struct Chunk {
 	GLuint ID = 0; // might get removed from here later
@@ -73,12 +75,12 @@ struct Chunk {
 				for (GLuint x = 0; x < CHUNK_SIZE; x++) {
 					const Voxel &voxel = voxels[y][z][x];
 					if (! voxel.isEmpty()) {
-						quads.emplace_back(glm::uvec3(x, y, z), 0, voxel.material_id, ID); // ............
-						quads.emplace_back(glm::uvec3(x, y, z), 1, voxel.material_id, ID); // ............
-						quads.emplace_back(glm::uvec3(x, y, z), 2, voxel.material_id, ID); // ............
-						quads.emplace_back(glm::uvec3(x, y, z), 3, voxel.material_id, ID); // ............
-						quads.emplace_back(glm::uvec3(x, y, z), 4, voxel.material_id, ID); // ............
-						quads.emplace_back(glm::uvec3(x, y, z), 5, voxel.material_id, ID); // ............
+						quads.emplace_back(glm::uvec3(x, y, z), 0, voxel.material_id, ID);
+						quads.emplace_back(glm::uvec3(x, y, z), 1, voxel.material_id, ID);
+						quads.emplace_back(glm::uvec3(x, y, z), 2, voxel.material_id, ID);
+						quads.emplace_back(glm::uvec3(x, y, z), 3, voxel.material_id, ID);
+						quads.emplace_back(glm::uvec3(x, y, z), 4, voxel.material_id, ID);
+						quads.emplace_back(glm::uvec3(x, y, z), 5, voxel.material_id, ID);
 					}
 				}
 			}
