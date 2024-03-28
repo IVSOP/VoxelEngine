@@ -369,9 +369,9 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 			glm::vec3(1.0f, 1.0f, 1.0f),
 			glm::vec3(1.0f, 1.0f, 1.0f),
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
-			glm::vec3(0.1f),
+			glm::vec3(0.0f),
 			32.0f,
-			0
+			3
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
@@ -405,8 +405,8 @@ void Renderer::drawLighting(std::vector<Quad> &_quads, const glm::mat4 &projecti
 		dirLights[0] = {
 			// .direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
 			.direction = glm::normalize(glm::vec3(1.0f, 0.1f, 0.0f)),
-			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
-			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
+			.ambient = glm::vec3(0.2f, 0.2f, 0.2f),
+			.diffuse = glm::vec3(0.78f, 0.78f, 0.78f),
 			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
 		};
 

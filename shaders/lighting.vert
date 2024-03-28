@@ -65,41 +65,40 @@ normal {
 		case 0:
 			position.yz = position.zy;
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, -1.0, 0.0);
-			vs_out.v_TexCoord = vec2(position.x / 31.0, position.y / 31.0);
+			vs_out.v_TexCoord = vec2(position_x / 31.0, position_z / 31.0);
 			break;
 		case 1:
 			position.z = 1.0 - position.y;
 			position.y = 1.0;
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 1.0, 0.0);
-			vs_out.v_TexCoord = vec2(position.x / 31, 1.0 - (position.y / 31.0));
+			vs_out.v_TexCoord = vec2(position_x / 31.0, 1.0 - (position_z / 31.0));
 			break;
 		case 2:
 			// the default vertices are already in the right place, but rotated completely incorrectly
 			position.x = 1.0 - position.x;
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, 1.0);
-			vs_out.v_TexCoord = vec2(position.x / 31.0, position.y / 31.0);
+			vs_out.v_TexCoord = vec2(position_x / 31.0, position_y / 31.0);
 			break;
 		case 3:
 			// just bring it foward
 			position.z = 1.0;
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, -1.0);
-			vs_out.v_TexCoord = vec2(1.0 - (position.x / 31.0), position.y / 31.0);
+			vs_out.v_TexCoord = vec2(1.0 - (position_x / 31.0), position_y / 31.0);
 			break;
 		case 4:
 			position.xyz = position.zyx;
 			vs_out.v_Normal = u_NormalMatrix * vec3(-1.0, 0.0, 0.0);
-			vs_out.v_TexCoord = vec2(position.z / 31.0, position.y / 31.0);
+			vs_out.v_TexCoord = vec2(position_z / 31.0, position_y / 31.0);
 			break;
 		case 5:
 			position.z = 1.0 - position.x;
 			position.x = 1.0;
 			vs_out.v_Normal = u_NormalMatrix * vec3(1.0, 0.0, 0.0);
-			vs_out.v_TexCoord = vec2(1.0 - (position.z / 31.0), position.y / 31.0);
+			vs_out.v_TexCoord = vec2(1.0 - (position_z / 31.0), position_y / 31.0);
 			break;
 	}
 
 	position += vec3(float(position_x), float(position_y), float(position_z));
-	// add the position of the chunk itself
 	float chunk_position_x = 0.0;
 	float chunk_position_y = 0.0;
 	float chunk_position_z = 0.0;
