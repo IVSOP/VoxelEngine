@@ -102,7 +102,7 @@ normal {
 	}
 
 	vec3 chunk_position = texelFetch(u_ChunkInfoTBO, chunkID * VEC4_IN_CHUNKINFO).xyz;
-	position += vec3(float(position_x) + chunk_position.x, float(position_y) + 0, float(position_z) + 0);
+	position += vec3(float(position_x) + chunk_position.x, float(position_y) + chunk_position.y, float(position_z) + chunk_position.z);
 
 	vec4 viewspace_pos = u_View * u_Model * vec4(position, 1.0);
 	vs_out.v_FragPos = vec3(viewspace_pos);
