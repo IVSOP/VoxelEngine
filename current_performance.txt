@@ -1,1 +1,3 @@
 32x32 chunks (floor), each completely filled, 2.5 fps
+same, but separated chunks quads according to normal, to only display what can be seen from players position, 5.5fps 
+

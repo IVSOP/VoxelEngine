@@ -20,10 +20,24 @@
 #define WORLD_SIZE_Y 32
 #define WORLD_SIZE_Z 32
 
+#define WORLD_SIZE_X_FLOAT static_cast<GLfloat>(WORLD_SIZE_X)
+#define WORLD_SIZE_Y_FLOAT static_cast<GLfloat>(WORLD_SIZE_Y)
+#define WORLD_SIZE_Z_FLOAT static_cast<GLfloat>(WORLD_SIZE_Z)
+
+// normal {
+// 	0 - y (bottom)
+// 	1 + y (top)
+// 	2 - z (far)
+// 	3 + z (near)
+// 	4 - x (left)
+// 	5 + x (right)
+// }
+
 // made into a struct to be easier to store on the heap
 struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	ChunkInfo info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
+	std::vector<Quad> quads; // so I dont have to constantly alloca ad free
 
 	Chunk &get(const glm::uvec3 &position) {
 		return chunks[position.x][position.y][position.z];
@@ -35,27 +49,64 @@ struct World {
 		return std::vector<ChunkInfo>(&info[0][0][0], &info[WORLD_SIZE_X - 1][WORLD_SIZE_Y - 1][WORLD_SIZE_Z - 1]);
 	}
 
-	// maybe cache this here instead of in each chunk?
-	std::vector<Quad> getQuads() {
-		std::vector<Quad> vec;
+	// also this can probably be optimized but for now I will leave it to compiler magic
+	std::vector<Quad> getQuads(const glm::vec3 &playerPosition) {
+		quads.clear();
+
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-					chunks[x][y][z].addQuadsTo(vec);
+					const glm::vec3 coords = getReadCoords(x, y, z);
+					if (playerPosition.y > coords.y) {
+						chunks[x][y][z].addQuadsTo(quads, 1);
+					} else if (playerPosition.y < coords.y) {
+						chunks[x][y][z].addQuadsTo(quads, 0);
+					} else { // at same height
+						chunks[x][y][z].addQuadsTo(quads, 0);
+						chunks[x][y][z].addQuadsTo(quads, 1);
+					}
+
+					if (playerPosition.x > coords.x) {
+						chunks[x][y][z].addQuadsTo(quads, 5);
+					} else if (playerPosition.x < coords.x) {
+						chunks[x][y][z].addQuadsTo(quads, 4);
+					} else {
+						chunks[x][y][z].addQuadsTo(quads, 4);
+						chunks[x][y][z].addQuadsTo(quads, 5);
+					}
+
+					if (playerPosition.z > coords.z) {
+						chunks[x][y][z].addQuadsTo(quads, 3);
+					} else if (playerPosition.z < coords.z) {
+						chunks[x][y][z].addQuadsTo(quads, 2);
+					} else {
+						chunks[x][y][z].addQuadsTo(quads, 2);
+						chunks[x][y][z].addQuadsTo(quads, 3);
+					}
 				}
 			}
 		}
 
-		return vec;
+		return quads;
+	}
+
+	constexpr glm::vec3 getReadCoords(GLfloat x, GLfloat y, GLfloat z) const {
+		return
+			glm::vec3(
+				(static_cast<GLfloat>(x) - WORLD_SIZE_X_FLOAT / 2.0f) * WORLD_SIZE_X_FLOAT,
+				(static_cast<GLfloat>(y) - WORLD_SIZE_Y_FLOAT / 2.0f) * WORLD_SIZE_Y_FLOAT,
+				(static_cast<GLfloat>(z) - WORLD_SIZE_Z_FLOAT / 2.0f) * WORLD_SIZE_Z_FLOAT
+			);
 	}
 
 	World() {
 		// build the info. I want to make it so that [half][half][half] is roughly around (0,0,0)
-		// for now this does not happen
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-					info[x][y][z] = ChunkInfo(32.0f * glm::vec3(static_cast<GLfloat>(x), static_cast<GLfloat>(y), static_cast<GLfloat>(z)));
+					info[x][y][z] = ChunkInfo(
+						getReadCoords(x, y, z)
+					);
 					chunks[x][y][z].ID = &chunks[x][y][z] - &chunks[0][0][0];// idc let the compiler sort this out
 					// printf("ID %u is in %f %f %f\n", chunks[x][y][z].ID, info[x][y][z].position.x, info[x][y][z].position.y, info[x][y][z].position.z);
 				}

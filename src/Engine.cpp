@@ -69,7 +69,7 @@ void Engine::renderLoop() {
 
         // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
-		renderer.get()->draw(world.get()->getQuads(), world.get()->getInfo(), projection, *camera.get(), window, deltaTime);
+		renderer.get()->draw(world.get()->getQuads(this->camera.get()->Position), world.get()->getInfo(), projection, *camera.get(), window, deltaTime);
         // lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -271,7 +271,7 @@ Engine::Engine() {
 	
 	for (GLuint x = 0; x < 32; x++) {
 		for (GLuint z = 0; z < 32; z++) {
-			world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
+			world.get()->copyChunkTo(chunk, glm::uvec3(x, 16, z));
 		}
 	}
 }

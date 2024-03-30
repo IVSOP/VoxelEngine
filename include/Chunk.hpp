@@ -37,7 +37,8 @@ struct Chunk {
 	// 3D array, [y][z][x] (height, depth, width). this can easily be moved around to test what gets better cache performance
 	Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	bool quadsHaveChanged = false;
-	std::vector<Quad> quads; // I suspect that most chunks will have empty space so I use a vector. idk how bad this is, memory will be extremely sparse. maybe using a fixed size array here will be better, need to test
+	// [i] corresponds to normal == i
+	std::vector<Quad> quads[6]; // I suspect that most chunks will have empty space so I use a vector. idk how bad this is, memory will be extremely sparse. maybe using a fixed size array here will be better, need to test
 
 	Voxel &getVoxelAt(const glm::uvec3 &pos) {
 		return voxels[pos.y][pos.z][pos.x];
@@ -52,35 +53,32 @@ struct Chunk {
 		return voxels[pos.y][pos.z][pos.x].isEmpty();
 	}
 
-	std::vector<Quad> getQuads() {
+	std::vector<Quad> getQuads(GLuint normal) {
 		if (quadsHaveChanged) {
 			rebuildQuads();
 		}
-		return this->quads;
+		return this->quads[normal];
 	}
 
-	void addQuadsTo(std::vector<Quad> &_quads) {
+	void addQuadsTo(std::vector<Quad> &_quads, GLuint normal) {
 		if (quadsHaveChanged) {
 			rebuildQuads();
 		}
-		_quads.insert(_quads.end(), this->quads.begin(), this->quads.end()); // idk
+		_quads.insert(_quads.end(), this->quads[normal].begin(), this->quads[normal].end()); // idk
 	}
 
 	void rebuildQuads() {
 		quadsHaveChanged = false;
-		quads.clear(); // pray that this does not change the capacity
-		// very simple algorithm for now
-		for (GLuint y = 0; y < CHUNK_SIZE; y++) {
-			for (GLuint z = 0; z < CHUNK_SIZE; z++) {
-				for (GLuint x = 0; x < CHUNK_SIZE; x++) {
-					const Voxel &voxel = voxels[y][z][x];
-					if (! voxel.isEmpty()) {
-						quads.emplace_back(glm::uvec3(x, y, z), 0, voxel.material_id, ID);
-						quads.emplace_back(glm::uvec3(x, y, z), 1, voxel.material_id, ID);
-						quads.emplace_back(glm::uvec3(x, y, z), 2, voxel.material_id, ID);
-						quads.emplace_back(glm::uvec3(x, y, z), 3, voxel.material_id, ID);
-						quads.emplace_back(glm::uvec3(x, y, z), 4, voxel.material_id, ID);
-						quads.emplace_back(glm::uvec3(x, y, z), 5, voxel.material_id, ID);
+		for (GLuint normal = 0; normal < 6; normal ++) {
+			quads[normal].clear(); // pray that this does not change the capacity
+			// very simple algorithm for now
+			for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+				for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+					for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+						const Voxel &voxel = voxels[y][z][x];
+						if (! voxel.isEmpty()) {
+							quads[normal].emplace_back(glm::uvec3(x, y, z), normal, voxel.material_id, ID);
+						}
 					}
 				}
 			}
