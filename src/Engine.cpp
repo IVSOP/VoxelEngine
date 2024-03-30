@@ -268,10 +268,11 @@ Engine::Engine() {
 			}
 		}
 	}
-	
-	for (GLuint x = 0; x < 32; x++) {
-		for (GLuint z = 0; z < 32; z++) {
-			world.get()->copyChunkTo(chunk, glm::uvec3(x, 16, z));
+
+	for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
+		for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
+			world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
+			world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
 		}
 	}
 }

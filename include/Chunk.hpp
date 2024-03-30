@@ -7,6 +7,15 @@
 #include "Quad.hpp"
 #include <vector>
 
+// normal {
+// 	0 - y (bottom)
+// 	1 + y (top)
+// 	2 - z (far)
+// 	3 + z (near)
+// 	4 - x (left)
+// 	5 + x (right)
+// }
+
 struct Voxel {
 	GLint material_id;
 
@@ -14,7 +23,7 @@ struct Voxel {
 	Voxel(GLint material_id) : material_id(material_id) {}
 
 	// this way I save memory, plus ints are aligned nicely
-	bool isEmpty() const {
+	constexpr bool isEmpty() const {
 		if (material_id < 0) return true;
 		return false;
 	}
@@ -67,16 +76,52 @@ struct Chunk {
 		_quads.insert(_quads.end(), this->quads[normal].begin(), this->quads[normal].end()); // idk
 	}
 
+	constexpr bool voxelAt(GLuint y, GLuint z, GLuint x) {
+		return ! voxels[y][z][x].isEmpty();
+	}
+
 	void rebuildQuads() {
 		quadsHaveChanged = false;
 		for (GLuint normal = 0; normal < 6; normal ++) {
 			quads[normal].clear(); // pray that this does not change the capacity
-			// very simple algorithm for now
 			for (GLuint y = 0; y < CHUNK_SIZE; y++) {
 				for (GLuint z = 0; z < CHUNK_SIZE; z++) {
 					for (GLuint x = 0; x < CHUNK_SIZE; x++) {
 						const Voxel &voxel = voxels[y][z][x];
 						if (! voxel.isEmpty()) {
+							switch(normal) { // the compiler will probably unroll the entire loop, but later I might do it manually anyway. this can also be optimized to only check uneven voxel positions and build everything from them
+								case 0:
+									if (y > 0 && voxelAt(y - 1, z, x)) {
+										continue;
+									}
+									break;
+								case 1:
+									if (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x)) {
+										continue;
+									}
+									// printf("I am at %u %u %u, and did not detect voxel above: voxelAt(%u, %u, %u) was %u \n", x, y, z, y + 1, z, x, voxelAt(y + 1, z, x));
+									break;
+								case 2:
+									if (z > 0 && voxelAt(y, z - 1, x)) {
+										continue;
+									}
+									break;
+								case 3:
+									if (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x)) {
+										continue;
+									}
+									break;
+								case 4:
+									if (x > 0 && voxelAt(y, z, x - 1)) {
+										continue;
+									}
+									break;
+								case 5:
+									if (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1)) {
+										continue;
+									}
+									break;	
+							}
 							quads[normal].emplace_back(glm::uvec3(x, y, z), normal, voxel.material_id, ID);
 						}
 					}

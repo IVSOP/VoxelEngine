@@ -16,9 +16,9 @@
 #include <thread>
 #include <mutex>
 
-#define WORLD_SIZE_X 32
-#define WORLD_SIZE_Y 32
-#define WORLD_SIZE_Z 32
+#define WORLD_SIZE_X 16
+#define WORLD_SIZE_Y 16
+#define WORLD_SIZE_Z 16
 
 #define WORLD_SIZE_X_FLOAT static_cast<GLfloat>(WORLD_SIZE_X)
 #define WORLD_SIZE_Y_FLOAT static_cast<GLfloat>(WORLD_SIZE_Y)
@@ -46,7 +46,7 @@ struct World {
 	std::vector<ChunkInfo> getInfo() {
 		// extremely cursed but this supposedly preserves the underlying pointer and does not allocate memory for it
 		// can change it in the future it this is not true
-		return std::vector<ChunkInfo>(&info[0][0][0], &info[WORLD_SIZE_X - 1][WORLD_SIZE_Y - 1][WORLD_SIZE_Z - 1]);
+		return std::vector<ChunkInfo>(&info[0][0][0], &info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]); // ??????? use [max] and not [max - 1] ??????? idk, it works
 	}
 
 	// also this can probably be optimized but for now I will leave it to compiler magic
@@ -90,12 +90,12 @@ struct World {
 		return quads;
 	}
 
-	constexpr glm::vec3 getReadCoords(GLfloat x, GLfloat y, GLfloat z) const {
+	constexpr glm::vec3 getReadCoords(GLuint x, GLuint y, GLuint z) const {
 		return
 			glm::vec3(
-				(static_cast<GLfloat>(x) - WORLD_SIZE_X_FLOAT / 2.0f) * WORLD_SIZE_X_FLOAT,
-				(static_cast<GLfloat>(y) - WORLD_SIZE_Y_FLOAT / 2.0f) * WORLD_SIZE_Y_FLOAT,
-				(static_cast<GLfloat>(z) - WORLD_SIZE_Z_FLOAT / 2.0f) * WORLD_SIZE_Z_FLOAT
+				(static_cast<GLfloat>(x) - WORLD_SIZE_X_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
+				(static_cast<GLfloat>(y) - WORLD_SIZE_Y_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
+				(static_cast<GLfloat>(z) - WORLD_SIZE_Z_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE)
 			);
 	}
 
