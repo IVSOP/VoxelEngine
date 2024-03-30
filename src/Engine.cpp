@@ -260,10 +260,10 @@ Engine::Engine() {
 
 
 	Chunk chunk;
-	for (GLuint y = 0; y < 32; y++) {
-		for (GLuint z = 0; z < 32; z++) {
-			for (GLuint x = 0; x < 32; x++) {
-				Voxel voxel = Voxel(0);
+	Voxel voxel = Voxel(0);
+	for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+		for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+			for (GLuint x = 0; x < CHUNK_SIZE; x++) {
 				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
 			}
 		}
@@ -275,6 +275,12 @@ Engine::Engine() {
 			world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
 		}
 	}
+
+	chunk = Chunk();
+	for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
+		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
+	}
+	world.get()->copyChunkTo(chunk, glm::uvec3(WORLD_SIZE_X / 2, WORLD_SIZE_Y / 2, WORLD_SIZE_Z / 2));
 }
 
 void Engine::loop() {

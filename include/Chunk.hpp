@@ -2,6 +2,7 @@
 #define CHUNK_H
 
 #define CHUNK_SIZE 32
+#define CHUNK_SIZE_FLOAT static_cast<GLfloat>(CHUNK_SIZE)
 
 #include "common.hpp"
 #include "Quad.hpp"

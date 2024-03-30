@@ -56,8 +56,8 @@ struct World {
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-					const glm::vec3 coords = getReadCoords(x, y, z);
-					if (playerPosition.y > coords.y) {
+					const glm::vec3 coords = getRealCoords(x, y, z);
+					if (playerPosition.y > coords.y + CHUNK_SIZE_FLOAT) {
 						chunks[x][y][z].addQuadsTo(quads, 1);
 					} else if (playerPosition.y < coords.y) {
 						chunks[x][y][z].addQuadsTo(quads, 0);
@@ -66,7 +66,7 @@ struct World {
 						chunks[x][y][z].addQuadsTo(quads, 1);
 					}
 
-					if (playerPosition.x > coords.x) {
+					if (playerPosition.x > coords.x + CHUNK_SIZE_FLOAT) {
 						chunks[x][y][z].addQuadsTo(quads, 5);
 					} else if (playerPosition.x < coords.x) {
 						chunks[x][y][z].addQuadsTo(quads, 4);
@@ -75,7 +75,7 @@ struct World {
 						chunks[x][y][z].addQuadsTo(quads, 5);
 					}
 
-					if (playerPosition.z > coords.z) {
+					if (playerPosition.z > coords.z + CHUNK_SIZE_FLOAT) {
 						chunks[x][y][z].addQuadsTo(quads, 3);
 					} else if (playerPosition.z < coords.z) {
 						chunks[x][y][z].addQuadsTo(quads, 2);
@@ -90,9 +90,9 @@ struct World {
 		return quads;
 	}
 
-	constexpr glm::vec3 getReadCoords(GLuint x, GLuint y, GLuint z) const {
+	constexpr glm::vec3 getRealCoords(GLuint x, GLuint y, GLuint z) const {
 		return
-			glm::vec3(
+			glm::vec3( // make it so that [half][half][half] is roughly around (0,0,0)
 				(static_cast<GLfloat>(x) - WORLD_SIZE_X_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
 				(static_cast<GLfloat>(y) - WORLD_SIZE_Y_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
 				(static_cast<GLfloat>(z) - WORLD_SIZE_Z_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE)
@@ -100,12 +100,12 @@ struct World {
 	}
 
 	World() {
-		// build the info. I want to make it so that [half][half][half] is roughly around (0,0,0)
+		// build the info
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
 					info[x][y][z] = ChunkInfo(
-						getReadCoords(x, y, z)
+						getRealCoords(x, y, z)
 					);
 					chunks[x][y][z].ID = &chunks[x][y][z] - &chunks[0][0][0];// idc let the compiler sort this out
 					// printf("ID %u is in %f %f %f\n", chunks[x][y][z].ID, info[x][y][z].position.x, info[x][y][z].position.y, info[x][y][z].position.z);
