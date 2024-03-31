@@ -19,4 +19,17 @@
 
 const GLchar *readFromFile(const char *filepath);
 
+// wrapper around a simple pointer. did not want to include the size into the template for now
+template<typename T> struct custom_array {
+	const T* _data;
+	const GLsizei _size;
+
+	constexpr const GLsizei size() const { return _size; }
+	constexpr const T* data() const { return _data; }
+
+	custom_array(T* data, GLsizei size)
+	: _data(data), _size(size) {}
+	~custom_array() = default;
+};
+
 #endif

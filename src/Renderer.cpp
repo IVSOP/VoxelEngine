@@ -329,7 +329,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::Checkbox("Show axis", &showAxis);
 }
 
-void Renderer::drawLighting(const std::vector<Quad> &quads, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -559,7 +559,7 @@ void Renderer::endFrame(GLFWwindow * window) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::draw(const std::vector<Quad> &quads, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(quads, chunkInfo, projection, view, camera);
