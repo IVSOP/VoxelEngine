@@ -128,21 +128,41 @@ struct World {
 	// then add world size / 2 due to the offset that makes chunks[half][half][half] contain (0, 0, 0)
 	const Voxel &getVoxel(const glm::ivec3 &position) {
 
+		// had weird innacuracies when values were not floats, like -7.15 + 8 == 0 but actualy was -7 + 8 == 1
+
 		Chunk & chunk = chunks // this gets ID of the chunk
-			[(position.x / CHUNK_SIZE) + (WORLD_SIZE_X / 2)]
-			[(position.y / CHUNK_SIZE) + (WORLD_SIZE_Y / 2)]
-			[(position.z / CHUNK_SIZE) + (WORLD_SIZE_Z / 2)];
-			// [static_cast<GLuint>((position.x / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))]
-			// [static_cast<GLuint>((position.y / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))]
-			// [static_cast<GLuint>((position.z / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))];
+			[static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))]
+			[static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))]
+			[static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))];
 
 
 		// this gets position inside of the chunk
 		glm::uvec3 pos;
-		pos.x = abs(position.x) % CHUNK_SIZE;
-		pos.y = abs(position.y) % CHUNK_SIZE;
-		pos.z = abs(position.z) % CHUNK_SIZE;
-		// printf("voxel position: %u %u %u material: %d\n", pos.x, pos.y, pos.z, chunk.getVoxelAt(pos).material_id);
+		if (position.x < 0) {
+			pos.x = 32 - (abs(position).x % CHUNK_SIZE);
+		} else {
+			pos.x = position.x % CHUNK_SIZE;
+		}
+		
+		if (position.y < 0) {
+			pos.y = 32 - (abs(position).y % CHUNK_SIZE);
+		} else {
+			pos.y = position.y % CHUNK_SIZE;
+		}
+		
+		if (position.z < 0) {
+			pos.z = 32 - (abs(position).z % CHUNK_SIZE);
+		} else {
+			pos.z = position.z % CHUNK_SIZE;
+		}
+		// printf("%d %d %d mapped to voxel position: %u %u %u material: %d chunk[%u][%u][%u] (%lu)\n",
+			position.x, position.y, position.z,
+			pos.x, pos.y, pos.z,
+			chunk.getVoxelAt(pos).material_id,
+			static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f)),
+			static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f)),
+			static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f)),
+			&chunks[static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))][static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))][static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))] - &chunks[0][0][0]);
 
 		return chunk.getVoxelAt(pos);
 	}
@@ -151,25 +171,37 @@ struct World {
 	SelectedBlockInfo getBlockInfo(const glm::ivec3 &position) {
 		SelectedBlockInfo ret;
 
+		// had weird innacuracies when values were not floats, like -7.15 + 8 == 0 but actualy was -7 + 8 == 1
+
 		Chunk *chunk = &chunks // this gets ID of the chunk
-			[(position.x / CHUNK_SIZE) + (WORLD_SIZE_X / 2)]
-			[(position.y / CHUNK_SIZE) + (WORLD_SIZE_Y / 2)]
-			[(position.z / CHUNK_SIZE) + (WORLD_SIZE_Z / 2)];
-			// [static_cast<GLuint>((position.x / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))]
-			// [static_cast<GLuint>((position.y / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))]
-			// [static_cast<GLuint>((position.z / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))];
+			[static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))]
+			[static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))]
+			[static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))];
 
 		ret.chunkID = chunk - &chunks[0][0][0];
 
 		// this gets position inside of the chunk
 		glm::u8vec3 pos;
-		pos.x = abs(position.x) % CHUNK_SIZE;
-		pos.y = abs(position.y) % CHUNK_SIZE;
-		pos.z = abs(position.z) % CHUNK_SIZE;
+		if (position.x < 0) {
+			pos.x = 32 - (abs(position).x % CHUNK_SIZE);
+		} else {
+			pos.x = position.x % CHUNK_SIZE;
+		}
+		
+		if (position.y < 0) {
+			pos.y = 32 - (abs(position).y % CHUNK_SIZE);
+		} else {
+			pos.y = position.y % CHUNK_SIZE;
+		}
+		
+		if (position.z < 0) {
+			pos.z = 32 - (abs(position).z % CHUNK_SIZE);
+		} else {
+			pos.z = position.z % CHUNK_SIZE;
+		}
 
 		ret.position = pos;
 		ret.materialID = chunk->getVoxelAt(pos).material_id;
-		// printf("voxel position: %u %u %u material: %d\n", pos.x, pos.y, pos.z, chunk.getVoxelAt(pos).material_id);
 
 		return ret;
 	}
@@ -248,13 +280,12 @@ struct World {
 
 				SelectedBlockInfo blockInfo = getBlockInfo(coords);
 
-
 				if (! blockInfo.isEmpty()) {
 
 					// printf("%d %d %d face %d %d %d\n", x, y, z, face[0], face[1], face[2]);
 					// printf("detected a block at %d %d %d\n", coords.x, coords.y, coords.z);
-					// will optimize this later
 
+					// will optimize this later
 					if (face[0] == 1) blockInfo.normal = NORMAL_POS_X;
 					else if (face[0] == -1) blockInfo.normal = NORMAL_NEG_X;
 
@@ -263,7 +294,6 @@ struct World {
 
 					if (face[2] == 1) blockInfo.normal = NORMAL_POS_Z;
 					else if (face[2] == -1) blockInfo.normal = NORMAL_NEG_Z;
-
 					return blockInfo;
 				}
 			} else { // is this needed????????

@@ -288,6 +288,18 @@ Engine::Engine() {
 		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
 	}
 	world.get()->copyChunkTo(chunk, glm::uvec3(WORLD_SIZE_X / 2, WORLD_SIZE_Y / 2, WORLD_SIZE_Z / 2));
+
+	chunk = Chunk();
+	for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
+		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
+	}
+	world.get()->copyChunkTo(chunk, glm::uvec3((WORLD_SIZE_X / 2) + 1, (WORLD_SIZE_Y / 2) + 1, (WORLD_SIZE_Z / 2) + 1));
+
+	chunk = Chunk();
+	for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
+		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
+	}
+	world.get()->copyChunkTo(chunk, glm::uvec3((WORLD_SIZE_X / 2) - 1, (WORLD_SIZE_Y / 2) - 1, (WORLD_SIZE_Z / 2) - 1));
 }
 
 void Engine::loop() {
