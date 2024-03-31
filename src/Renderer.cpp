@@ -104,6 +104,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 : viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
   lightingShader("shaders/lighting.vert", "shaders/lighting.frag"),
   axisShader("shaders/basic.vert", "shaders/basic.frag"),
+  highlightShader("shaders/highlight.vert", "shaders/highlight.frag"),
   blurShader("shaders/blur.vert", "shaders/blur.frag"),
   hdrBbloomMergeShader("shaders/hdrBloomMerge.vert", "shaders/hdrBloomMerge.frag")
 {
@@ -329,7 +330,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::Checkbox("Show axis", &showAxis);
 }
 
-void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -345,6 +346,8 @@ void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<C
 
 		// load vertices
 		GLCall(glBufferData(GL_ARRAY_BUFFER, quads.size() * sizeof(Quad), quads.data(), GL_STATIC_DRAW));
+
+
 
 		// bind program, load uniforms
 		lightingShader.use();
@@ -457,14 +460,58 @@ void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<C
 
 		// lightingShader.validate();
 
-		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, quads.size()))
-
+		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, quads.size()));
 
 		if (showAxis) {
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
 
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+}
+
+void Renderer::drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view) {
+	// VAO, VBO (except the data), FBO and chunk TBO are the same as in drawLighting, noit setting any of it!!!!!!!!!!!!!!!!! except vao and vbo
+	// in the future reorder draws, showAxis usually messes everything up
+
+		GLCall(glBindVertexArray(this->VAO));
+
+		Quad quad = Quad(selectedBlock.position, selectedBlock.normal, selectedBlock.materialID, selectedBlock.chunkID);
+		// printf("quad at %u %u %u material %d chunk %u normal %u \n", quad.getPosition().x, quad.getPosition().y, quad.getPosition().z, quad.getMaterialID(), quad.getChunkID(), quad.getNormal());
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
+		GLCall(glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(Quad), &quad, GL_STATIC_DRAW));
+
+		// constexpr glm::mat4 model = glm::mat4(1.5f);
+		// can be optimized
+		glm::mat4 model;
+		switch (selectedBlock.normal) {
+			case 0:
+				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.02f, 0.0f));
+				break;
+			case 1:
+				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.02f, 0.0f));
+				break;
+			case 2:
+				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.02f));
+				break;
+			case 3:
+				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.02f));
+				break;
+			case 4:
+				model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.02f, 0.0f, 0.0f));
+				break;
+			case 5:
+				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.02f, 0.0f, 0.0f));
+				break;
+		}
+
+		highlightShader.use();
+		highlightShader.setMat4("u_Model", model);
+		highlightShader.setMat4("u_View", view);
+		highlightShader.setMat4("u_Projection", projection);
+		highlightShader.setInt("u_ChunkInfoTBO", CHUNKINFO_TEXTURE_BUFFER_SLOT);
+		highlightShader.setFloat("u_BloomThreshold", bloomThreshold);
+
+		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1));
 }
 
 void Renderer::bloomBlur(int passes) {
@@ -559,10 +606,13 @@ void Renderer::endFrame(GLFWwindow * window) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(quads, chunkInfo, projection, view, camera);
+	drawLighting(quads, chunkInfo, selectedBlock, projection, view, camera);
+	if (! selectedBlock.isEmpty()) {
+		drawSelectedBlock(selectedBlock, chunkInfo, projection, view);
+	}
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 

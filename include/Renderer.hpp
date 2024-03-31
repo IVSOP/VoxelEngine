@@ -31,7 +31,7 @@ public:
 	GLuint base_vertexBuffer, // VBO for base vertex positions of a quad
 		   vertexBuffer,      // VBO for all other information, needs to be separate due to instancing
 		   vertexBuffer_axis; // VBO for axis vertices
-	Shader lightingShader, axisShader;
+	Shader lightingShader, axisShader, highlightShader;
 	GLuint lightingFBO = 0, lightingFBODepthBuffer = 0;
 	GLuint lightingTexture = 0; // color atttachment 0, scene renders into this
 	GLuint brightTexture = 0; // color atttachment 1, extraction of brightly lit areas
@@ -60,7 +60,7 @@ public:
 
 
 
-	void draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime); // const
+	void draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime); // const
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
 
 	void loadTextures();
@@ -71,7 +71,8 @@ public:
 
 private:
 	void prepareFrame(Camera &camera, GLfloat deltatime);
-	void drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
+	void drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
+	void drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view); // will draw over the FBO used in drawLighting
 	void bloomBlur(int passes);
 	void merge();
 	void endFrame(GLFWwindow * window);

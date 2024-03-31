@@ -19,12 +19,27 @@
 
 const GLchar *readFromFile(const char *filepath);
 
+// idk where else to put this
+struct SelectedBlockInfo {
+	GLint materialID;
+	GLuint chunkID;
+	GLubyte normal;
+	glm::u8vec3 position; // relative to chunk
+
+	SelectedBlockInfo(GLint materialID, GLuint chunkID, GLubyte normal, const glm::u8vec3 &position)
+	: materialID(materialID), chunkID(chunkID), normal(normal), position(position) {}
+
+	SelectedBlockInfo() = default;
+
+	constexpr bool isEmpty() const { return materialID < 0; }
+};
+
 // wrapper around a simple pointer. did not want to include the size into the template for now
 template<typename T> struct custom_array {
 	const T* _data;
 	const GLsizei _size;
 
-	constexpr const GLsizei size() const { return _size; }
+	constexpr GLsizei size() const { return _size; }
 	constexpr const T* data() const { return _data; }
 
 	custom_array(T* data, GLsizei size)

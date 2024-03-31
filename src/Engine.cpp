@@ -69,7 +69,14 @@ void Engine::renderLoop() {
 
         // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
-		renderer.get()->draw(world.get()->getQuads(this->camera.get()->Position), world.get()->getInfo(), projection, *camera.get(), window, deltaTime);
+		SelectedBlockInfo selectedBlock = world.get()->getSelectedBlock(camera.get()->Position, camera.get()->Front);
+		renderer.get()->draw(
+			world.get()->getQuads(this->camera.get()->Position),
+			world.get()->getInfo(),
+			selectedBlock,
+			projection,
+			*camera.get(),
+			window, deltaTime);
         // lock.unlock();
 
         currentFrameTime = glfwGetTime();

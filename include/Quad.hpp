@@ -1,13 +1,17 @@
 #ifndef QUAD_H
 #define QUAD_H
 
+// these not currently used
+#define MAX_MATERIAL 0x000000FF
+#define MAX_CHUNK_ID 0x00FFFFFF
+
 // this is a quad that is processed and ready to go to the gpu in whatever weird format it expects
 // you can think of this as Vertex, but I found it confusing since I am using instances (basically I rather think about drawing instances rather than drawing vertices)
 struct Quad {
 	GLint position_and_normal = 0;
 	GLint material_and_chunkid = 0;
 
-	Quad(const glm::uvec3 &pos, GLint normal, GLubyte _material_id, GLint _chunk_id) {
+	Quad(const glm::u8vec3 &pos, GLubyte normal, GLubyte _material_id, GLint _chunk_id) {
 		position_and_normal = ((pos.x << 24) & 0xFF000000) | ((pos.y << 16) & 0x00FF0000) | ((pos.z << 8) & 0x0000FF00) | (normal & 0x000000FF);
 
 		material_and_chunkid = ((_material_id << 24) & 0xFF000000) | (_chunk_id & 0x00FFFFFF);
@@ -31,8 +35,12 @@ struct Quad {
 		return ((material_and_chunkid >> 24) & 0x000000FF);
 	}
 
-	GLint getChunkID() const {
+	GLuint getChunkID() const {
 		return (material_and_chunkid & 0x00FFFFFF);
+	}
+
+	GLubyte getNormal() const {
+		return (position_and_normal & 0x000000FF);
 	}
 };
 

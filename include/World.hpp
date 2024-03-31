@@ -22,6 +22,13 @@
 // 	5 + x (right)
 // }
 
+#define NORMAL_NEG_Y 0
+#define NORMAL_POS_Y 1
+#define NORMAL_NEG_Z 2
+#define NORMAL_POS_Z 3
+#define NORMAL_NEG_X 4
+#define NORMAL_POS_X 5
+
 struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	ChunkInfo info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
@@ -100,10 +107,6 @@ struct World {
 		}
 	}
 
-	// void addVoxelAt(const glm::uvec3 &position) {
-	// got lazy didnt feel like doing the math
-	// }
-
 	void copyChunkTo(const Chunk &chunk, const glm::uvec3 position) {
 		// printf("\n\nThe id of the chunk in %u %u %u is %u. Its info position is %f %f %f\n\n",
 		// 	position.x, position.y, position.z,
@@ -116,6 +119,197 @@ struct World {
 		// for safety, so it applies new ID to all quads (ID was probably not defined, if it was then remove this)
 		chunks[position.x][position.y][position.z].ID = ID;
 		chunks[position.x][position.y][position.z].quadsHaveChanged = true;
+	}
+
+	
+
+	// I have no idea if this math is correct
+	// basically / chunk size to get a chunk ID
+	// then add world size / 2 due to the offset that makes chunks[half][half][half] contain (0, 0, 0)
+	const Voxel &getVoxel(const glm::ivec3 &position) {
+
+		Chunk & chunk = chunks // this gets ID of the chunk
+			[(position.x / CHUNK_SIZE) + (WORLD_SIZE_X / 2)]
+			[(position.y / CHUNK_SIZE) + (WORLD_SIZE_Y / 2)]
+			[(position.z / CHUNK_SIZE) + (WORLD_SIZE_Z / 2)];
+			// [static_cast<GLuint>((position.x / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))]
+			// [static_cast<GLuint>((position.y / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))]
+			// [static_cast<GLuint>((position.z / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))];
+
+
+		// this gets position inside of the chunk
+		glm::uvec3 pos;
+		pos.x = abs(position.x) % CHUNK_SIZE;
+		pos.y = abs(position.y) % CHUNK_SIZE;
+		pos.z = abs(position.z) % CHUNK_SIZE;
+		// printf("voxel position: %u %u %u material: %d\n", pos.x, pos.y, pos.z, chunk.getVoxelAt(pos).material_id);
+
+		return chunk.getVoxelAt(pos);
+	}
+
+	// same as above, but it returns a SelectedBlockInfo so I don't have to get chunkID and position again
+	SelectedBlockInfo getBlockInfo(const glm::ivec3 &position) {
+		SelectedBlockInfo ret;
+
+		Chunk *chunk = &chunks // this gets ID of the chunk
+			[(position.x / CHUNK_SIZE) + (WORLD_SIZE_X / 2)]
+			[(position.y / CHUNK_SIZE) + (WORLD_SIZE_Y / 2)]
+			[(position.z / CHUNK_SIZE) + (WORLD_SIZE_Z / 2)];
+			// [static_cast<GLuint>((position.x / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))]
+			// [static_cast<GLuint>((position.y / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))]
+			// [static_cast<GLuint>((position.z / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))];
+
+		ret.chunkID = chunk - &chunks[0][0][0];
+
+		// this gets position inside of the chunk
+		glm::u8vec3 pos;
+		pos.x = abs(position.x) % CHUNK_SIZE;
+		pos.y = abs(position.y) % CHUNK_SIZE;
+		pos.z = abs(position.z) % CHUNK_SIZE;
+
+		ret.position = pos;
+		ret.materialID = chunk->getVoxelAt(pos).material_id;
+		// printf("voxel position: %u %u %u material: %d\n", pos.x, pos.y, pos.z, chunk.getVoxelAt(pos).material_id);
+
+		return ret;
+	}
+
+	constexpr float custom_mod (float value, float modulus) {
+		return fmod(fmod(value, modulus) + modulus, modulus);
+	}
+
+	constexpr float intbound(float s, float ds) {
+		// Find the smallest positive t such that s+t*ds is an integer.
+		if (ds < 0) {
+			return intbound(-s, -ds);
+		} else {
+			s = custom_mod(s, 1.0f);
+			// The problem is now s + t * ds = 1.0
+			return (1.0f - s) / ds;
+		}
+	}
+
+	constexpr int signum(float x) {
+		return (x > 0) ? 1 : (x < 0) ? -1 : 0;
+	}
+
+	SelectedBlockInfo getSelectedBlock(const glm::vec3 &position, const glm::vec3 &lookPosition) {
+		int x = static_cast<int>(std::floor(position.x));
+		int y = static_cast<int>(std::floor(position.y));
+		int z = static_cast<int>(std::floor(position.z));
+
+		const float dx = lookPosition.x;
+		const float dy = lookPosition.y;
+		const float dz = lookPosition.z;
+
+		const int stepX = signum(dx);
+		const int stepY = signum(dy);
+		const int stepZ = signum(dz);
+
+		float tMaxX = intbound(position.x, dx);
+		float tMaxY = intbound(position.y, dy);
+		float tMaxZ = intbound(position.z, dz);
+
+		const float tDeltaX = stepX / dx;
+		const float tDeltaY = stepY / dy;
+		const float tDeltaZ = stepZ / dz;
+
+		if (dx == 0 && dy == 0 && dz == 0) {
+			// throw std::range_error("Raycast in zero direction!");
+			return SelectedBlockInfo(-1, 0, 0, {});
+		}
+
+		// will optimize this later
+		char face[3] = {0, 0, 0};
+
+		// size of the world, will change in the future
+		constexpr int wx = (WORLD_SIZE_X * CHUNK_SIZE) / 2;
+		constexpr int wy = (WORLD_SIZE_Y * CHUNK_SIZE) / 2;
+		constexpr int wz = (WORLD_SIZE_Z * CHUNK_SIZE) / 2;
+
+		float radius = 10.0f; // max distance
+		constexpr int max_iter = 10; // to be removed later
+		int i = 0;
+
+		// radius /= sqrt(dx*dx+dy*dy+dz*dz); // ?????????
+
+		// put radius condition here?????????????????????
+		while (
+				// (stepX > 0 ? x < wx : x >= 0) &&
+				// (stepY > 0 ? y < wy : y >= 0) &&
+				// (stepZ > 0 ? z < wz : z >= 0) &&
+				// (stepX < 0 ? x >= -wx : true) && // Check for negative x bounds
+				// (stepY < 0 ? y >= -wy : true) && // Check for negative y bounds
+				// (stepZ < 0 ? z >= -wz : true) && // Check for negative z bounds
+				(i < max_iter)) {
+
+			if (!(x <= -wx || y <= -wy || z <= -wz || x >= wx || y >= wy || z >= wz)) {
+				const glm::ivec3 coords = glm::ivec3(x, y, z);
+
+				SelectedBlockInfo blockInfo = getBlockInfo(coords);
+
+
+				if (! blockInfo.isEmpty()) {
+
+					// printf("%d %d %d face %d %d %d\n", x, y, z, face[0], face[1], face[2]);
+					// printf("detected a block at %d %d %d\n", coords.x, coords.y, coords.z);
+					// will optimize this later
+
+					if (face[0] == 1) blockInfo.normal = NORMAL_POS_X;
+					else if (face[0] == -1) blockInfo.normal = NORMAL_NEG_X;
+
+					if (face[1] == 1) blockInfo.normal = NORMAL_POS_Y;
+					else if (face[1] == -1) blockInfo.normal = NORMAL_NEG_Y;
+
+					if (face[2] == 1) blockInfo.normal = NORMAL_POS_Z;
+					else if (face[2] == -1) blockInfo.normal = NORMAL_NEG_Z;
+
+					return blockInfo;
+				}
+			} else { // is this needed????????
+				break;
+			}
+
+			if (tMaxX < tMaxY) {
+				if (tMaxX < tMaxZ) {
+					if (tMaxX > radius) break;
+					x += stepX;
+					tMaxX += tDeltaX;
+					face[0] = -stepX;
+					face[1] = 0;
+					face[2] = 0;
+				} else {
+					if (tMaxZ > radius) break;
+					z += stepZ;
+					tMaxZ += tDeltaZ;
+					face[0] = 0;
+					face[1] = 0;
+					face[2] = -stepZ;
+				}
+			} else {
+				if (tMaxY < tMaxZ) {
+					if (tMaxY > radius) break;
+					y += stepY;
+					tMaxY += tDeltaY;
+					face[0] = 0;
+					face[1] = -stepY;
+					face[2] = 0;
+				} else {
+					if (tMaxZ > radius) break;
+					z += stepZ;
+					tMaxZ += tDeltaZ;
+					face[0] = 0;
+					face[1] = 0;
+					face[2] = -stepZ;
+				}
+			}
+
+
+			i++;
+
+		}
+		// nothing found within range
+		return SelectedBlockInfo(-1, 0, 0, {});
 	}
 };
 
