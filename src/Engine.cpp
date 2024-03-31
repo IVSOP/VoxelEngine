@@ -56,6 +56,12 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
     }
 }
 
+void handleMouseKey(GLFWwindow* window, int button, int action, int mods) {
+	Engine *engine = reinterpret_cast<Engine *>(glfwGetWindowUserPointer(window));
+
+	engine->inputHandler.get()->pressMouseKey(window, button, action, mods);
+}
+
 void Engine::renderLoop() {
     double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
     while (!glfwWindowShouldClose(window)) {
@@ -64,12 +70,12 @@ void Engine::renderLoop() {
 		lastFrameTime = glfwGetTime();
 
         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
-        inputHandler.get()->applyToCamera(*camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
+		SelectedBlockInfo selectedBlock = world.get()->getSelectedBlock(camera.get()->Position, camera.get()->Front);
+        inputHandler.get()->applyInputs(world.get(), selectedBlock, camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
         // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
-		SelectedBlockInfo selectedBlock = world.get()->getSelectedBlock(camera.get()->Position, camera.get()->Front);
 		renderer.get()->draw(
 			world.get()->getQuads(this->camera.get()->Position),
 			world.get()->getInfo(),
@@ -183,9 +189,10 @@ Engine::Engine() {
     ///////////////////////// CALLBAKCS
     glfwSetFramebufferSizeCallback(window, setWindow);
     glfwSetKeyCallback(window, handleKey);
-    // TEMPORARY
+    // TEMPORARY (is it?)
     inputHandler.get()->handleMouseMov = handleMouseMov;
     glfwSetCursorPosCallback(window, handleMouseMov);
+	glfwSetMouseButtonCallback(window, handleMouseKey);
 
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -279,27 +286,27 @@ Engine::Engine() {
 	for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 		for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
 			world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
-			world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
+			// world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
 		}
 	}
 
-	chunk = Chunk();
-	for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
-		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
-	}
-	world.get()->copyChunkTo(chunk, glm::uvec3(WORLD_SIZE_X / 2, WORLD_SIZE_Y / 2, WORLD_SIZE_Z / 2));
+	// chunk = Chunk();
+	// for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
+	// 	chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
+	// }
+	// world.get()->copyChunkTo(chunk, glm::uvec3(WORLD_SIZE_X / 2, WORLD_SIZE_Y / 2, WORLD_SIZE_Z / 2));
 
-	chunk = Chunk();
-	for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
-		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
-	}
-	world.get()->copyChunkTo(chunk, glm::uvec3((WORLD_SIZE_X / 2) + 1, (WORLD_SIZE_Y / 2) + 1, (WORLD_SIZE_Z / 2) + 1));
+	// chunk = Chunk();
+	// for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
+	// 	chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
+	// }
+	// world.get()->copyChunkTo(chunk, glm::uvec3((WORLD_SIZE_X / 2) + 1, (WORLD_SIZE_Y / 2) + 1, (WORLD_SIZE_Z / 2) + 1));
 
-	chunk = Chunk();
-	for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
-		chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
-	}
-	world.get()->copyChunkTo(chunk, glm::uvec3((WORLD_SIZE_X / 2) - 1, (WORLD_SIZE_Y / 2) - 1, (WORLD_SIZE_Z / 2) - 1));
+	// chunk = Chunk();
+	// for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
+	// 	chunk.insertVoxelAt(glm::uvec3(i, i, i), voxel);
+	// }
+	// world.get()->copyChunkTo(chunk, glm::uvec3((WORLD_SIZE_X / 2) - 1, (WORLD_SIZE_Y / 2) - 1, (WORLD_SIZE_Z / 2) - 1));
 }
 
 void Engine::loop() {

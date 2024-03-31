@@ -1,5 +1,8 @@
 #include "InputHandler.hpp"
 
+// defined in Engine.cpp. yes, this is cursed
+void handleMouseKey(GLFWwindow* window, int button, int action, int mods);
+
 InputHandler::InputHandler()
 : keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), curX(0.0f), curY(0.0f), lastX(0.0f), lastY(0.0f), inMenu(false)
 {
@@ -7,12 +10,12 @@ InputHandler::InputHandler()
 }
 
 void handleMouseMovInMenu(GLFWwindow *window, double xpos, double ypos) {
-	// maneira manhosa de meter o imgui clicavel, no futuro vai para o inputhandler
+	// maneira manhosa de meter o imgui clicavel
 	ImGui::GetIO().AddMousePosEvent(xpos, ypos);
 }
 
 void handleMouseClickInMenu(GLFWwindow* window, int button, int action, int mods) {
-	// maneira manhosa de meter o imgui clicavel, no futuro vai para o inputhandler
+	// maneira manhosa de meter o imgui clicavel
 	ImGui::GetIO().AddMouseButtonEvent(button, action == GLFW_PRESS ? true : false);
 }
 
@@ -25,7 +28,7 @@ void InputHandler::pressKey(GLFWwindow *window, int key, int scancode, int actio
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		if (inMenu) { // then go into engine
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			glfwSetMouseButtonCallback(window, nullptr);
+			glfwSetMouseButtonCallback(window, handleMouseKey);
 			// ImGui::SetMouseCursor(ImGuiMouseCursor_None); // acho que isto nao e preciso
 			inMenu = false;
 			glfwSetCursorPosCallback(window, handleMouseMov);
@@ -38,6 +41,12 @@ void InputHandler::pressKey(GLFWwindow *window, int key, int scancode, int actio
 			glfwSetCursorPosCallback(window, handleMouseMovInMenu);
 		}
 	}
+}
+
+void InputHandler::pressMouseKey(GLFWwindow* window, int button, int action, int mods) {
+	KeyInfo *keys = this->keyInfo.get();
+
+	keys[button].newAction(action, mods);
 }
 
 void InputHandler::centerMouseTo(GLdouble center_x, GLdouble center_y) {
@@ -69,33 +78,38 @@ std::vector<KeyInfo> InputHandler::getKeysPressedOrHeld() const {
 // 	return glm::vec2(curX - lastX, curY - lastY);
 // }
 
-void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeight, GLfloat deltatime) {
+void InputHandler::applyInputs(World *world, const SelectedBlockInfo &selectedInfo, Camera *camera, int windowWidth, int windowHeight, GLfloat deltatime) {
 	// muito mal feito, tbm nao tive paciencia mas funcemina
 
 	const KeyInfo *keys = keyInfo.get();
 
 	if ((&keys[GLFW_KEY_W])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(FRONT, deltatime);
+		camera->ProcessKeyboard(FRONT, deltatime);
 	}
 	if ((&keys[GLFW_KEY_S])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(BACK, deltatime);
+		camera->ProcessKeyboard(BACK, deltatime);
 	}
 	if ((&keys[GLFW_KEY_A])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(LEFT, deltatime);
+		camera->ProcessKeyboard(LEFT, deltatime);
 	}
 	if ((&keys[GLFW_KEY_D])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(RIGHT, deltatime);
+		camera->ProcessKeyboard(RIGHT, deltatime);
 	}
 	if ((&keys[GLFW_KEY_SPACE])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(UP, deltatime);
+		camera->ProcessKeyboard(UP, deltatime);
 	}
 	if ((&keys[GLFW_KEY_LEFT_ALT])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(DOWN, deltatime);
+		camera->ProcessKeyboard(DOWN, deltatime);
 	}
 	if ((&keys[GLFW_KEY_LEFT_SHIFT])->last_action != GLFW_RELEASE) {
-		camera.SpeedUp(true);
+		camera->SpeedUp(true);
 	} else {
-		camera.SpeedUp(false);
+		camera->SpeedUp(false);
+	}
+	if ((&keys[GLFW_MOUSE_BUTTON_LEFT])->last_action != GLFW_RELEASE) {
+		if (! selectedInfo.isEmpty()) {
+			world->breakVoxel(selectedInfo);
+		}
 	}
 
 
@@ -110,6 +124,6 @@ void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeig
 		lastY = curY;
 
 		// printf("Camera moving mouse from %f %f to %f %f\n", lastX, lastY, curX, curY);
-		camera.ProcessMouseMovement(xoffset, yoffset);
+		camera->ProcessMouseMovement(xoffset, yoffset);
 	}
 }

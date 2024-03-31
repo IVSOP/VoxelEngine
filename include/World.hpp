@@ -156,13 +156,13 @@ struct World {
 			pos.z = position.z % CHUNK_SIZE;
 		}
 		// printf("%d %d %d mapped to voxel position: %u %u %u material: %d chunk[%u][%u][%u] (%lu)\n",
-			position.x, position.y, position.z,
-			pos.x, pos.y, pos.z,
-			chunk.getVoxelAt(pos).material_id,
-			static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f)),
-			static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f)),
-			static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f)),
-			&chunks[static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))][static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))][static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))] - &chunks[0][0][0]);
+		// 	position.x, position.y, position.z,
+		// 	pos.x, pos.y, pos.z,
+		// 	chunk.getVoxelAt(pos).material_id,
+		// 	static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f)),
+		// 	static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f)),
+		// 	static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f)),
+		// 	&chunks[static_cast<GLuint>((static_cast<GLfloat>(position.x) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_X_FLOAT / 2.0f))][static_cast<GLuint>((static_cast<GLfloat>(position.y) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Y_FLOAT / 2.0f))][static_cast<GLuint>((static_cast<GLfloat>(position.z) / CHUNK_SIZE_FLOAT) + (WORLD_SIZE_Z_FLOAT / 2.0f))] - &chunks[0][0][0]);
 
 		return chunk.getVoxelAt(pos);
 	}
@@ -340,6 +340,17 @@ struct World {
 		}
 		// nothing found within range
 		return SelectedBlockInfo(-1, 0, 0, {});
+	}
+
+	Chunk &getChunkByID(GLuint chunkID) {
+		Chunk * cursed_ptr = reinterpret_cast<Chunk *>(chunks);
+		return cursed_ptr[chunkID];
+	}
+
+	// SelectedBlockInfo is what the caller will have, and it contains all the information needed to do this
+	void breakVoxel(const SelectedBlockInfo &selectedInfo) {
+		Chunk &chunk = getChunkByID(selectedInfo.chunkID);
+		chunk.insertVoxelAt(selectedInfo.position, Voxel(-1));
 	}
 };
 

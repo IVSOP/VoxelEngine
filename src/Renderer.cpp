@@ -469,7 +469,7 @@ void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<C
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 }
 
-void Renderer::drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view) {
+void Renderer::drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, const glm::mat4 &view) {
 	// VAO, VBO (except the data), FBO and chunk TBO are the same as in drawLighting, noit setting any of it!!!!!!!!!!!!!!!!! except vao and vbo
 	// in the future reorder draws, showAxis usually messes everything up
 
@@ -611,7 +611,7 @@ void Renderer::draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(quads, chunkInfo, selectedBlock, projection, view, camera);
 	if (! selectedBlock.isEmpty()) {
-		drawSelectedBlock(selectedBlock, chunkInfo, projection, view);
+		drawSelectedBlock(selectedBlock, projection, view);
 	}
 	bloomBlur(this->bloomBlurPasses);
 	merge();

@@ -50,16 +50,16 @@ struct Chunk {
 	// [i] corresponds to normal == i
 	std::vector<Quad> quads[6]; // I suspect that most chunks will have empty space so I use a vector. idk how bad this is, memory will be extremely sparse. maybe using a fixed size array here will be better, need to test
 
-	Voxel &getVoxelAt(const glm::uvec3 &pos) {
+	Voxel &getVoxelAt(const glm::u8vec3 &pos) {
 		return voxels[pos.y][pos.z][pos.x];
 	}
 
-	void insertVoxelAt(const glm::uvec3 &pos, const Voxel &voxel) {
+	void insertVoxelAt(const glm::u8vec3 &pos, const Voxel &voxel) {
 		voxels[pos.y][pos.z][pos.x] = voxel;
 		quadsHaveChanged = true;
 	}
 
-	bool isEmptyAt(const glm::uvec3 &pos) {
+	bool isEmptyAt(const glm::u8vec3 &pos) {
 		return voxels[pos.y][pos.z][pos.x].isEmpty();
 	}
 
@@ -74,7 +74,7 @@ struct Chunk {
 		if (quadsHaveChanged) {
 			rebuildQuads();
 		}
-		_quads.insert(_quads.end(), this->quads[normal].begin(), this->quads[normal].end()); // idk
+		_quads.insert(_quads.end(), this->quads[normal].begin(), this->quads[normal].end()); // idk.this is also pretty bad since it uses copy constructor I think, or at least emplace_back
 	}
 
 	constexpr bool voxelAt(GLuint y, GLuint z, GLuint x) {
@@ -123,7 +123,7 @@ struct Chunk {
 									}
 									break;	
 							}
-							quads[normal].emplace_back(glm::uvec3(x, y, z), normal, voxel.material_id, ID);
+							quads[normal].emplace_back(glm::u8vec3(x, y, z), normal, voxel.material_id, ID);
 						}
 					}
 				}

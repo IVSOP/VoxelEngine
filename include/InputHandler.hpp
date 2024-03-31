@@ -5,7 +5,7 @@
 #include <vector>
 #include "common.hpp"
 #include "Camera.hpp"
-
+#include "World.hpp"
 
 #define MAX_KEYS_ID GLFW_KEY_MENU
 
@@ -68,6 +68,7 @@ public:
 	~InputHandler() = default;
 
 	void pressKey(GLFWwindow *window, int key, int scancode, int action, int mods);
+	void pressMouseKey(GLFWwindow* window, int button, int action, int mods);
 	void centerMouseTo(GLdouble center_x, GLdouble center_y); // same as below but also changes the last position
 	void moveMouseTo(GLdouble x, GLdouble y);
 
@@ -77,8 +78,9 @@ public:
 	// glm::vec2 getMouseMovDelta() const;
 
 
-	// por simplicidade, inputHandler passa as coisas a camera diretamente
-	void applyToCamera(Camera &camera, int windowWidth, int windowHeight, GLfloat deltatime);
+	// changes camera
+	// pointers because its easier, idk if using references would be copying the object (in the caller)
+	void applyInputs(World *world, const SelectedBlockInfo &selectedInfo, Camera *camera, int windowWidth, int windowHeight, GLfloat deltatime);
 };
 
 #endif

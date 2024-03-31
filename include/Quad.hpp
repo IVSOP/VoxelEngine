@@ -11,16 +11,10 @@ struct Quad {
 	GLint position_and_normal = 0;
 	GLint material_and_chunkid = 0;
 
-	Quad(const glm::u8vec3 &pos, GLubyte normal, GLubyte _material_id, GLint _chunk_id) {
+	constexpr Quad(const glm::u8vec3 &pos, GLubyte normal, GLubyte _material_id, GLint _chunk_id) {
 		position_and_normal = ((pos.x << 24) & 0xFF000000) | ((pos.y << 16) & 0x00FF0000) | ((pos.z << 8) & 0x0000FF00) | (normal & 0x000000FF);
 
-		material_and_chunkid = ((_material_id << 24) & 0xFF000000) | (_chunk_id & 0x00FFFFFF);
-
-		// this check is only for debugging purposes
-		if (_chunk_id > 0x00FFFFFF) {
-			fprintf(stderr, "max value for chunk id has been exceeded\n");
-			exit(1);
-		}
+		material_and_chunkid = ((static_cast<GLuint>(_material_id) << 24) & 0xFF000000) | (_chunk_id & 0x00FFFFFF);
 	}
 
 	glm::uvec3 getPosition() {
