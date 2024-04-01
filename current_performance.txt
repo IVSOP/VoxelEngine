@@ -1,4 +1,5 @@
 32x32 chunks (floor), each completely filled, 2.5 fps
 same, but separated chunks quads according to normal, to only display what can be seen from players position, 5.5fps 
 same, added culling for when there are voxels facing each other, but only inside the same chunk, max fps (165)
-
+full 16x16x16 world: 59fps
+full 16x16x16 world, with custom quad array: 68 fps

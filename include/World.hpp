@@ -54,7 +54,7 @@ struct World {
 	}
 
 	// also this can probably be optimized but for now I will leave it to compiler magic
-	std::vector<Quad> getQuads(const glm::vec3 &playerPosition) {
+	std::vector<Quad> &getQuads(const glm::vec3 &playerPosition) {
 		quads.clear();
 
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
