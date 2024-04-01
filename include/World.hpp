@@ -3,7 +3,6 @@
 
 #include "common.hpp"
 #include "Chunk.hpp"
-#include <array>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp> // distance2
@@ -43,7 +42,7 @@
 struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	ChunkInfo info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
-	std::vector<Quad> quads; // so I dont have to constantly alloca ad free
+	QuadContainer<Quad> quads; // so I dont have to constantly alloca ad free
 
 	constexpr Chunk &get(const glm::uvec3 &position) {
 		return chunks[position.x][position.y][position.z];
@@ -54,7 +53,7 @@ struct World {
 	}
 
 	// also this can probably be optimized but for now I will leave it to compiler magic
-	std::vector<Quad> &getQuads(const glm::vec3 &playerPosition) {
+	QuadContainer<Quad> &getQuads(const glm::vec3 &playerPosition) {
 		quads.clear();
 
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
@@ -132,7 +131,9 @@ struct World {
 		return chunk_offset + glm::ivec3(position);
 	}
 
-	World() {
+	World()
+	: quads(1 << 10) // why td is 2e10 20000000000?????????????
+	{
 		// build the info
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
@@ -405,11 +406,11 @@ struct World {
 
 		// box that sphere is contained in
 		GLint min_x = glm::clamp(static_cast<GLint>(real_center_float.x - radius), MIN_X, MAX_X),
-		max_x = glm::clamp(max_x = static_cast<GLint>(real_center_float.x + radius), MIN_X, MAX_X),
-		min_y = glm::clamp(min_y = static_cast<GLint>(real_center_float.y - radius), MIN_Y, MAX_Y),
-		max_y = glm::clamp(max_y = static_cast<GLint>(real_center_float.y + radius), MIN_Y, MAX_Y),
-		min_z = glm::clamp(min_z = static_cast<GLint>(real_center_float.z - radius), MIN_Z, MAX_Z),
-		max_z = glm::clamp(max_z = static_cast<GLint>(real_center_float.z + radius), MIN_Z, MAX_Z);
+		max_x = glm::clamp(static_cast<GLint>(real_center_float.x + radius), MIN_X, MAX_X),
+		min_y = glm::clamp(static_cast<GLint>(real_center_float.y - radius), MIN_Y, MAX_Y),
+		max_y = glm::clamp(static_cast<GLint>(real_center_float.y + radius), MIN_Y, MAX_Y),
+		min_z = glm::clamp(static_cast<GLint>(real_center_float.z - radius), MIN_Z, MAX_Z),
+		max_z = glm::clamp(static_cast<GLint>(real_center_float.z + radius), MIN_Z, MAX_Z);
 
 		GLfloat dist_squared;
 		for (GLint x = min_x; x <= max_x; x++) {

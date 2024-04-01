@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "Quad.hpp"
 #include <vector>
+#include "QuadContainer.hpp"
 
 // normal {
 // 	0 - y (bottom)
@@ -70,11 +71,11 @@ struct Chunk {
 		return this->quads[normal];
 	}
 
-	void addQuadsTo(std::vector<Quad> &_quads, GLuint normal) {
+	void addQuadsTo(QuadContainer<Quad> &_quads, GLuint normal) {
 		if (quadsHaveChanged) {
 			rebuildQuads();
 		}
-		_quads.insert(_quads.end(), this->quads[normal].begin(), this->quads[normal].end()); // idk.this is also pretty bad since it uses copy constructor I think, or at least emplace_back
+		_quads.add(quads[normal]);
 	}
 
 	constexpr bool voxelAt(GLuint y, GLuint z, GLuint x) {

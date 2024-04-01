@@ -1,8 +1,8 @@
 #!/bin/bash
 
 DIR="build"
-
-if cmake -DGLFW_BUILD_DOCS=OFF -S . -B $DIR; then
+# add Release build type???
+if cmake -DCMAKE_BUILD_TYPE=Release -DGLFW_BUILD_DOCS=OFF -S . -B $DIR; then
 	printf "\n"
 	if cmake --build $DIR --parallel; then
 		exit 0

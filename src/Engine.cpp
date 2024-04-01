@@ -5,6 +5,10 @@
 
 #include "Engine.hpp"
 
+#ifdef PROFILING
+	#include <valgrind/callgrind.h>
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
@@ -320,6 +324,9 @@ void Engine::loop() {
     std::thread physThread(&Engine::physLoop, this);
 	physThread.detach();
 
+#ifdef PROFILING
+	CALLGRIND_START_INSTRUMENTATION;
+#endif
 	renderLoop();
 }
 
