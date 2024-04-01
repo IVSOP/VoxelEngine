@@ -139,19 +139,19 @@ struct World {
 		// this gets position inside of the chunk
 		glm::uvec3 pos;
 		if (position.x < 0) {
-			pos.x = 32 - (abs(position).x % CHUNK_SIZE);
+			pos.x = (32 - (abs(position.x) % CHUNK_SIZE)) % CHUNK_SIZE; // weird math needed since 1) negative valeus 2) starts at -1 not 0. the last % feels bad, is only for when == 32 to prevent resulting in 32. have to redo this math
 		} else {
 			pos.x = position.x % CHUNK_SIZE;
 		}
 		
 		if (position.y < 0) {
-			pos.y = 32 - (abs(position).y % CHUNK_SIZE);
+			pos.y = (32 - (abs(position.y) % CHUNK_SIZE)) % CHUNK_SIZE; // weird math needed since 1) negative valeus 2) starts at -1 not 0. the last % feels bad, is only for when == 32 to prevent resulting in 32. have to redo this math
 		} else {
 			pos.y = position.y % CHUNK_SIZE;
 		}
 		
 		if (position.z < 0) {
-			pos.z = 32 - (abs(position).z % CHUNK_SIZE);
+			pos.z = (32 - (abs(position.z) % CHUNK_SIZE)) % CHUNK_SIZE; // weird math needed since 1) negative valeus 2) starts at -1 not 0. the last % feels bad, is only for when == 32 to prevent resulting in 32. have to redo this math
 		} else {
 			pos.z = position.z % CHUNK_SIZE;
 		}
@@ -183,19 +183,19 @@ struct World {
 		// this gets position inside of the chunk
 		glm::u8vec3 pos;
 		if (position.x < 0) {
-			pos.x = 32 - (abs(position).x % CHUNK_SIZE);
+			pos.x = (32 - (abs(position.x) % CHUNK_SIZE)) % CHUNK_SIZE; // weird math needed since 1) negative valeus 2) starts at -1 not 0. the last % feels bad, is only for when == 32 to prevent resulting in 32. have to redo this math
 		} else {
 			pos.x = position.x % CHUNK_SIZE;
 		}
 		
 		if (position.y < 0) {
-			pos.y = 32 - (abs(position).y % CHUNK_SIZE);
+			pos.y = (32 - (abs(position.y) % CHUNK_SIZE)) % CHUNK_SIZE; // weird math needed since 1) negative valeus 2) starts at -1 not 0. the last % feels bad, is only for when == 32 to prevent resulting in 32. have to redo this math
 		} else {
 			pos.y = position.y % CHUNK_SIZE;
 		}
 		
 		if (position.z < 0) {
-			pos.z = 32 - (abs(position).z % CHUNK_SIZE);
+			pos.z = (32 - (abs(position.z) % CHUNK_SIZE)) % CHUNK_SIZE; // weird math needed since 1) negative valeus 2) starts at -1 not 0. the last % feels bad, is only for when == 32 to prevent resulting in 32. have to redo this math
 		} else {
 			pos.z = position.z % CHUNK_SIZE;
 		}
@@ -280,6 +280,7 @@ struct World {
 
 				SelectedBlockInfo blockInfo = getBlockInfo(coords);
 
+
 				if (! blockInfo.isEmpty()) {
 
 					// printf("%d %d %d face %d %d %d\n", x, y, z, face[0], face[1], face[2]);
@@ -342,6 +343,7 @@ struct World {
 		return SelectedBlockInfo(-1, 0, 0, {});
 	}
 
+	// this being a reference is VERY cursed!!!!!!!
 	Chunk &getChunkByID(GLuint chunkID) {
 		Chunk * cursed_ptr = reinterpret_cast<Chunk *>(chunks);
 		return cursed_ptr[chunkID];
