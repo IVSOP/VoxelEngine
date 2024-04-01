@@ -16,6 +16,14 @@
 #define WORLD_SIZE_Y_FLOAT static_cast<GLfloat>(WORLD_SIZE_Y)
 #define WORLD_SIZE_Z_FLOAT static_cast<GLfloat>(WORLD_SIZE_Z)
 
+#define MAX_X ((CHUNK_SIZE * (WORLD_SIZE_X / 2)) - 1)
+#define MAX_Y ((CHUNK_SIZE * (WORLD_SIZE_X / 2)) - 1)
+#define MAX_Z ((CHUNK_SIZE * (WORLD_SIZE_X / 2)) - 1)
+
+#define MIN_X ((-MAX_X) - 1)
+#define MIN_Y ((-MAX_Y) - 1)
+#define MIN_Z ((-MAX_Z) - 1)
+
 // normal {
 // 	0 - y (bottom)
 // 	1 + y (top)
@@ -400,12 +408,12 @@ struct World {
 		const GLfloat radius_squared = radius * radius;
 
 		// box that sphere is contained in
-		GLint min_x = static_cast<GLint>(real_center_float.x - radius),
-		max_x = static_cast<GLint>(real_center_float.x + radius),
-		min_y = static_cast<GLint>(real_center_float.y - radius),
-		max_y = static_cast<GLint>(real_center_float.y + radius),
-		min_z = static_cast<GLint>(real_center_float.z - radius),
-		max_z = static_cast<GLint>(real_center_float.z + radius);
+		GLint min_x = glm::clamp(static_cast<GLint>(real_center_float.x - radius), MIN_X, MAX_X),
+		max_x = glm::clamp(max_x = static_cast<GLint>(real_center_float.x + radius), MIN_X, MAX_X),
+		min_y = glm::clamp(min_y = static_cast<GLint>(real_center_float.y - radius), MIN_Y, MAX_Y),
+		max_y = glm::clamp(max_y = static_cast<GLint>(real_center_float.y + radius), MIN_Y, MAX_Y),
+		min_z = glm::clamp(min_z = static_cast<GLint>(real_center_float.z - radius), MIN_Z, MAX_Z),
+		max_z = glm::clamp(max_z = static_cast<GLint>(real_center_float.z + radius), MIN_Z, MAX_Z);
 
 		GLfloat dist_squared;
 		for (GLint x = min_x; x <= max_x; x++) {

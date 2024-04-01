@@ -288,9 +288,12 @@ Engine::Engine() {
 	}
 
 	for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
-		for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-			world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
-			// world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
+		for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
+			for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
+				// world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
+				// world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
+				world.get()->copyChunkTo(chunk, glm::uvec3(x, y, z));
+			}
 		}
 	}
 
