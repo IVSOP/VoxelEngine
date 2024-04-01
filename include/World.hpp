@@ -295,10 +295,6 @@ struct World {
 		char face[3] = {0, 0, 0};
 
 		// size of the world, will change in the future
-		constexpr int wx = (WORLD_SIZE_X * CHUNK_SIZE) / 2;
-		constexpr int wy = (WORLD_SIZE_Y * CHUNK_SIZE) / 2;
-		constexpr int wz = (WORLD_SIZE_Z * CHUNK_SIZE) / 2;
-
 		float radius = 10.0f; // max distance
 		constexpr int max_iter = 10; // to be removed later
 		int i = 0;
@@ -315,7 +311,7 @@ struct World {
 				// (stepZ < 0 ? z >= -wz : true) && // Check for negative z bounds
 				(i < max_iter)) {
 
-			if (!(x <= -wx || y <= -wy || z <= -wz || x >= wx || y >= wy || z >= wz)) {
+			if (!(x < MIN_X || y < MIN_Y || z < MIN_Z || x > MAX_X || y > MAX_Y || z > MAX_Z)) {
 				const glm::ivec3 coords = glm::ivec3(x, y, z);
 
 				SelectedBlockInfo blockInfo = getBlockInfo(coords);
