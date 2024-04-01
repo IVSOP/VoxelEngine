@@ -328,9 +328,10 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
 	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
+	ImGui::SliderFloat("break_radius", &break_radius, 1.0f, 100.0f, "break_radius = %.3f");
 }
 
-void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -609,7 +610,7 @@ void Renderer::endFrame(GLFWwindow * window) {
 void Renderer::draw(const std::vector<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(quads, chunkInfo, selectedBlock, projection, view, camera);
+	drawLighting(quads, chunkInfo, projection, view, camera);
 	if (! selectedBlock.isEmpty()) {
 		drawSelectedBlock(selectedBlock, projection, view);
 	}

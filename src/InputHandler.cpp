@@ -78,7 +78,7 @@ std::vector<KeyInfo> InputHandler::getKeysPressedOrHeld() const {
 // 	return glm::vec2(curX - lastX, curY - lastY);
 // }
 
-void InputHandler::applyInputs(World *world, const SelectedBlockInfo &selectedInfo, Camera *camera, int windowWidth, int windowHeight, GLfloat deltatime) {
+void InputHandler::applyInputs(World *world, const SelectedBlockInfo &selectedInfo, GLfloat break_radius, Camera *camera, int windowWidth, int windowHeight, GLfloat deltatime) {
 	// muito mal feito, tbm nao tive paciencia mas funcemina
 
 	const KeyInfo *keys = keyInfo.get();
@@ -108,7 +108,11 @@ void InputHandler::applyInputs(World *world, const SelectedBlockInfo &selectedIn
 	}
 	if ((&keys[GLFW_MOUSE_BUTTON_LEFT])->last_action != GLFW_RELEASE) {
 		if (! selectedInfo.isEmpty()) {
-			world->breakVoxel(selectedInfo);
+			if ((&keys[GLFW_MOUSE_BUTTON_LEFT])->last_mods == GLFW_MOD_SHIFT) {
+				world->breakVoxelSphere(selectedInfo, break_radius);
+			} else {
+				world->breakVoxel(selectedInfo);
+			}
 		}
 	}
 

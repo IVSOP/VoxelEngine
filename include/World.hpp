@@ -5,6 +5,9 @@
 #include "Chunk.hpp"
 #include <array>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp> // distance2
+
 #define WORLD_SIZE_X 16
 #define WORLD_SIZE_Y 16
 #define WORLD_SIZE_Z 16
@@ -49,7 +52,7 @@ struct World {
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-					const glm::vec3 coords = getRealCoords(x, y, z);
+					const glm::vec3 coords = getChunkCoordsFloat(x, y, z);
 					if (playerPosition.y > coords.y + CHUNK_SIZE_FLOAT) {
 						chunks[x][y][z].addQuadsTo(quads, 1);
 					} else if (playerPosition.y < coords.y) {
@@ -83,7 +86,8 @@ struct World {
 		return quads;
 	}
 
-	constexpr glm::vec3 getRealCoords(GLuint x, GLuint y, GLuint z) const {
+	// from the chunk's position in array, return its world position
+	constexpr glm::vec3 getChunkCoordsFloat(GLuint x, GLuint y, GLuint z) const {
 		return
 			glm::vec3( // make it so that [half][half][half] is roughly around (0,0,0)
 				(static_cast<GLfloat>(x) - WORLD_SIZE_X_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
@@ -92,13 +96,41 @@ struct World {
 			);
 	}
 
+	constexpr glm::ivec3 getChunkCoords(GLuint x, GLuint y, GLuint z) const {
+		return
+			glm::ivec3( // make it so that [half][half][half] is roughly around (0,0,0)
+				((static_cast<GLint>(x) - WORLD_SIZE_X / 2) * CHUNK_SIZE),
+				((static_cast<GLint>(y) - WORLD_SIZE_Y / 2) * CHUNK_SIZE),
+				((static_cast<GLint>(z) - WORLD_SIZE_Z / 2) * CHUNK_SIZE)
+			);
+	}
+
+	// same as other ones but uses chunk ID
+	constexpr glm::ivec3 getChunkCoordsByID(GLuint ID) { // const
+		// what the fuck?
+		GLuint x = ID / (WORLD_SIZE_X * WORLD_SIZE_Y);
+		GLuint idk = ID -  x * WORLD_SIZE_X * WORLD_SIZE_Y;
+		GLuint y = idk / WORLD_SIZE_X;
+		GLuint z = idk % WORLD_SIZE_X;
+		Chunk &chunk = get(glm::uvec3(x, y, z));
+
+		// xyz are now [x][y][z] where chunk is located. this means this is not very optimized but since everytthing is constexpr I trust the compiler will manage this
+		return getChunkCoords(x, y, z);
+	}
+
+	// from position within chunk, retrieve position in the world
+	constexpr glm::ivec3 getWorldCoords(GLuint chunkID, glm::u8vec3 position) { // const
+		const glm::ivec3 chunk_offset = getChunkCoordsByID(chunkID);
+		return chunk_offset + glm::ivec3(position);
+	}
+
 	World() {
 		// build the info
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
 					info[x][y][z] = ChunkInfo(
-						getRealCoords(x, y, z)
+						getChunkCoordsFloat(x, y, z)
 					);
 					chunks[x][y][z].ID = &chunks[x][y][z] - &chunks[0][0][0];// idc let the compiler sort this out
 					// printf("ID %u is in %f %f %f\n", chunks[x][y][z].ID, info[x][y][z].position.x, info[x][y][z].position.y, info[x][y][z].position.z);
@@ -353,6 +385,41 @@ struct World {
 	void breakVoxel(const SelectedBlockInfo &selectedInfo) {
 		Chunk &chunk = getChunkByID(selectedInfo.chunkID);
 		chunk.insertVoxelAt(selectedInfo.position, Voxel(-1));
+	}
+
+	void breakVoxel(const glm::ivec3 position) {
+		// got lazy, this will automatically get chunk and position inside it
+		const SelectedBlockInfo blockInfo = getBlockInfo(position);
+
+		Chunk &chunk = getChunkByID(blockInfo.chunkID);
+		chunk.insertVoxelAt(blockInfo.position, Voxel(-1));
+	}
+
+	void breakVoxelSphere(const SelectedBlockInfo &selectedInfo, GLfloat radius) {
+		const glm::vec3 real_center_float = glm::vec3(getWorldCoords(selectedInfo.chunkID, selectedInfo.position));
+		const GLfloat radius_squared = radius * radius;
+
+		// box that sphere is contained in
+		GLint min_x = static_cast<GLint>(real_center_float.x - radius),
+		max_x = static_cast<GLint>(real_center_float.x + radius),
+		min_y = static_cast<GLint>(real_center_float.y - radius),
+		max_y = static_cast<GLint>(real_center_float.y + radius),
+		min_z = static_cast<GLint>(real_center_float.z - radius),
+		max_z = static_cast<GLint>(real_center_float.z + radius);
+
+		GLfloat dist_squared;
+		for (GLint x = min_x; x <= max_x; x++) {
+			for (GLint y = min_y; y <= max_y; y++) {
+				for (GLint z = min_z; z <= max_z; z++) {
+					const glm::vec3 vec = glm::vec3(x, y, z);
+					dist_squared = glm::distance2(real_center_float, vec);
+
+					if (dist_squared <= radius_squared) {
+						breakVoxel(glm::ivec3(vec));
+					}
+				}
+			}
+		}
 	}
 };
 

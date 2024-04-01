@@ -71,7 +71,11 @@ void Engine::renderLoop() {
 
         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
 		SelectedBlockInfo selectedBlock = world.get()->getSelectedBlock(camera.get()->Position, camera.get()->Front);
-        inputHandler.get()->applyInputs(world.get(), selectedBlock, camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
+        inputHandler.get()->applyInputs(
+			world.get(),
+			selectedBlock,
+			renderer.get()->break_radius,
+			camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
         // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
