@@ -55,12 +55,12 @@ struct Chunk {
 		return voxels[pos.y][pos.z][pos.x];
 	}
 
-	void insertVoxelAt(const glm::u8vec3 &pos, const Voxel &voxel) {
+	constexpr void insertVoxelAt(const glm::u8vec3 &pos, const Voxel &voxel) {
 		voxels[pos.y][pos.z][pos.x] = voxel;
 		quadsHaveChanged = true;
 	}
 
-	bool isEmptyAt(const glm::u8vec3 &pos) {
+	constexpr bool isEmptyAt(const glm::u8vec3 &pos) {
 		return voxels[pos.y][pos.z][pos.x].isEmpty();
 	}
 
@@ -71,7 +71,7 @@ struct Chunk {
 		return this->quads[normal];
 	}
 
-	void addQuadsTo(QuadContainer<Quad> &_quads, GLuint normal) {
+	constexpr void addQuadsTo(QuadContainer<Quad> &_quads, GLuint normal) {
 		if (quadsHaveChanged) {
 			rebuildQuads();
 		}

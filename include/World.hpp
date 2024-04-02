@@ -119,7 +119,6 @@ struct World {
 		GLuint idk = ID -  x * WORLD_SIZE_X * WORLD_SIZE_Y;
 		GLuint y = idk / WORLD_SIZE_X;
 		GLuint z = idk % WORLD_SIZE_X;
-		Chunk &chunk = get(glm::uvec3(x, y, z));
 
 		// xyz are now [x][y][z] where chunk is located. this means this is not very optimized but since everytthing is constexpr I trust the compiler will manage this
 		return getChunkCoords(x, y, z);
@@ -295,7 +294,6 @@ struct World {
 		// will optimize this later
 		char face[3] = {0, 0, 0};
 
-		// size of the world, will change in the future
 		float radius = 10.0f; // max distance
 		constexpr int max_iter = 10; // to be removed later
 		int i = 0;
@@ -310,7 +308,8 @@ struct World {
 				// (stepX < 0 ? x >= -wx : true) && // Check for negative x bounds
 				// (stepY < 0 ? y >= -wy : true) && // Check for negative y bounds
 				// (stepZ < 0 ? z >= -wz : true) && // Check for negative z bounds
-				(i < max_iter)) {
+				//(i < max_iter)) {
+				(true)) {
 
 			if (!(x < MIN_X || y < MIN_Y || z < MIN_Z || x > MAX_X || y > MAX_Y || z > MAX_Z)) {
 				const glm::ivec3 coords = glm::ivec3(x, y, z);

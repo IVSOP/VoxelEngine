@@ -24,7 +24,7 @@ public:
 	}
 
 	// copies data from the vector into here, reserving more space if needed
-	void add(std::vector<T> &vec) {
+	constexpr void add(std::vector<T> &vec) {
 		std::size_t og_sp = _sp;
 		_sp += vec.size();
 		if (og_sp == _sp) {
@@ -35,6 +35,7 @@ public:
 		}
 		// how to force this into memcpy aligned???
 		std::memcpy(reinterpret_cast<void *>(_data + og_sp), reinterpret_cast<void *>(vec.data()), sizeof(T) * (_sp - og_sp));
+		// std::copy(vec.begin(), vec.end(), _data + og_sp); // like 1 fps worse (because I dont have LTO?????)
 	}
 
 	void clear() {

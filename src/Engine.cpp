@@ -81,7 +81,6 @@ void Engine::renderLoop() {
 			renderer.get()->break_radius,
 			camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
-
         // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
 		renderer.get()->draw(
@@ -300,6 +299,31 @@ Engine::Engine() {
 			}
 		}
 	}
+	
+	// //floor and ceiling
+	// for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
+	// 		for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
+	// 			world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
+	// 			world.get()->copyChunkTo(chunk, glm::uvec3(x, WORLD_SIZE_Y - 1, z));
+
+	// 	}
+	// }
+
+	// // X walls
+	// for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
+	// 	for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
+	// 		world.get()->copyChunkTo(chunk, glm::uvec3(0, y, z));
+	// 		world.get()->copyChunkTo(chunk, glm::uvec3(WORLD_SIZE_X - 1, y, z));
+	// 	}
+	// }
+
+	// // Z walls
+	// for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
+	// 	for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
+	// 		world.get()->copyChunkTo(chunk, glm::uvec3(x, y, 0));
+	// 		world.get()->copyChunkTo(chunk, glm::uvec3(x, y, WORLD_SIZE_Z - 1));
+	// 	}
+	// }
 
 	// chunk = Chunk();
 	// for (GLuint i = 0; i < CHUNK_SIZE; i ++) {
