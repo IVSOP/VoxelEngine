@@ -34,6 +34,23 @@ struct SelectedBlockInfo {
 	constexpr bool isEmpty() const { return materialID < 0; }
 };
 
+// same
+struct IndirectData {
+	GLuint count;
+	GLuint instanceCount;
+	GLuint first;
+	GLuint baseInstance; // does nothing in opengl < 4.2. do I need this??????????????????????
+
+// 												           							                      6                              
+// same as glDrawArraysInstancedBaseInstance(mode,     cmd->first,             cmd->count,         cmd->instanceCount,             cmd->baseInstance); many times
+
+
+	IndirectData()
+	: count(6), baseInstance(0) {}
+
+	~IndirectData() = default;
+};
+
 // wrapper around a simple pointer. did not want to include the size into the template for now
 template<typename T> struct custom_array {
 	const T* _data;

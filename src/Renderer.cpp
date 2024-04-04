@@ -197,6 +197,11 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 		// GLCall(glVertexAttribDivisor(vertex_normal_layout, 0)); // values are per vertex
 	}
 
+	//////////////////////////// INDIRECT BUFFER ////////////////////////////
+	GLCall(glGenBuffers(1, &this->indirectBuffer));
+	GLCall(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this->indirectBuffer));
+	GLCall(glBufferData(GL_DRAW_INDIRECT_BUFFER, 5 * sizeof(GLuint), NULL, GL_DYNAMIC_DRAW));
+
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	lightingShader.use();
 	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
@@ -278,6 +283,7 @@ Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &materialBuffer));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_viewport));
+	GLCall(glDeleteBuffers(1, &indirectBuffer));
 
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	GLCall(glDeleteVertexArrays(1, &VAO_axis));
@@ -332,7 +338,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::SliderFloat("break_range", &break_range, 1.0f, 500.0f, "break_range = %.3f");
 }
 
-void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array<IndirectData> &indirect, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -462,7 +468,12 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array
 
 		// lightingShader.validate();
 
-		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, quads.size()));
+
+		GLCall(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer));
+		GLCall(glBufferData(GL_DRAW_INDIRECT_BUFFER, indirect.size() * sizeof(IndirectData), indirect.data(), GL_DYNAMIC_DRAW));
+
+		// GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, quads.size()));
+		GLCall(glDrawArraysIndirect(GL_TRIANGLES, (void *)0)); // offset is 0
 
 		if (showAxis) {
 			drawAxis(glm::mat4(1.0f), view, projection);
@@ -608,10 +619,10 @@ void Renderer::endFrame(GLFWwindow * window) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::draw(const QuadContainer<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const QuadContainer<Quad> &quads, const custom_array<IndirectData> &indirect, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(quads, chunkInfo, projection, view, camera);
+	drawLighting(quads, indirect, chunkInfo, projection, view, camera);
 	if (! selectedBlock.isEmpty()) {
 		drawSelectedBlock(selectedBlock, projection, view);
 	}

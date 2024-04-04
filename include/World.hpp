@@ -42,6 +42,7 @@
 struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	ChunkInfo info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
+	IndirectData indirect[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
 	QuadContainer<Quad> quads; // so I dont have to constantly alloca ad free
 
 	constexpr Chunk &get(const glm::uvec3 &position) {
@@ -52,14 +53,30 @@ struct World {
 		return custom_array(&info[0][0][0], WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z); // ??????? use [max] and not [max - 1] ??????? idk, it works
 	}
 
+	QuadContainer<Quad> &getQuads() {
+		return quads;
+	}
+	
+	custom_array<IndirectData> getIndirect() {
+		return custom_array(&indirect[0][0][0], WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z);
+	}
+
 	// also this can probably be optimized but for now I will leave it to compiler magic
-	QuadContainer<Quad> &getQuads(const glm::vec3 &playerPosition) {
+	void buildData(const glm::vec3 &playerPosition) {
 		quads.clear();
+
+		GLuint start_index = 0, end_index = 0;
+		GLuint chunkID;
 
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
+
 					const glm::vec3 coords = getChunkCoordsFloat(x, y, z);
+					// chunkID = getChunkID(x, y, z); // not even needed, could just be a counter, need to test using counter and indirect being a 1D array
+					start_index = end_index; 
+
+
 					if (playerPosition.y > coords.y + CHUNK_SIZE_FLOAT) {
 						chunks[x][y][z].addQuadsTo(quads, 1);
 					} else if (playerPosition.y < coords.y) {
@@ -86,11 +103,17 @@ struct World {
 						chunks[x][y][z].addQuadsTo(quads, 2);
 						chunks[x][y][z].addQuadsTo(quads, 3);
 					}
+
+					end_index = quads.size() - 1;
+
+
+					// [start - end] are the indices relative to this specific chunk
+					indirect[x][y][z].first = start_index;
+					indirect[x][y][z].instanceCount = end_index - start_index;
+					// printf("indirect[%u][%u][%u] is %u %u %u %u\n", x, y, z, indirect[x][y][z].count, indirect[x][y][z].primCount, indirect[x][y][z].first, indirect[x][y][z].baseInstance);
 				}
 			}
 		}
-
-		return quads;
 	}
 
 	// from the chunk's position in array, return its world position
@@ -122,6 +145,10 @@ struct World {
 
 		// xyz are now [x][y][z] where chunk is located. this means this is not very optimized but since everytthing is constexpr I trust the compiler will manage this
 		return getChunkCoords(x, y, z);
+	}
+
+	constexpr GLuint getChunkID(GLuint x, GLuint y, GLuint z) {
+		return (&chunks[x][y][z] - &chunks[0][0][0]);
 	}
 
 	// from position within chunk, retrieve position in the world
