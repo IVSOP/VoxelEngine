@@ -20,10 +20,10 @@ void main()
 {
 	// decode data from the attributes
 	// idk if this is how it should be done, I just apply the & at the end to make sure the rest of the number is zeroed out
-	uint position_x = (aPosAndNormal >> 26) & 0x0000003F;
-	uint position_y = (aPosAndNormal >> 20) & 0x0000003F;
-	uint position_z = (aPosAndNormal >> 14) & 0x0000003F;
-	uint normal     =  aPosAndNormal >> 11  & 0x00000007;
+	uint position_x = (aPosAndNormal >> 27) & 0x0000001F;
+	uint position_y = (aPosAndNormal >> 22) & 0x0000001F;
+	uint position_z = (aPosAndNormal >> 17) & 0x0000001F;
+	uint normal     =  aPosAndNormal >> 14  & 0x00000007;
 
 	int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;
 
