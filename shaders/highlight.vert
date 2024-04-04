@@ -18,33 +18,11 @@ uniform samplerBuffer u_ChunkInfoTBO;
 
 void main()
 {
-/* starting from the left (from FF in 0xFF000000), that is, the most significant bits
-32 bits {
-	8 - pos x
-	8 - pos y
-	8 - pos z
-	8 - normal
-}
-
-32 bits {
-	8 - material id
-}
-
-normal {
-	0 - y (bottom)
-	1 + y (top)
-	2 - z (far)
-	3 + z (near)
-	4 - x (left)
-	5 + x (right)
-}
-*/
-
 	// decode data from the attributes
 	// idk if this is how it should be done, I just apply the & at the end to make sure the rest of the number is zeroed out
-	uint position_x = (aPosAndNormal >> 24) & 0x000000FF;
-	uint position_y = (aPosAndNormal >> 16) & 0x000000FF;
-	uint position_z = (aPosAndNormal >> 8)  & 0x000000FF;
+	uint position_x = (aPosAndNormal >> 26) & 0x0000003F;
+	uint position_y = (aPosAndNormal >> 20) & 0x0000003F;
+	uint position_z = (aPosAndNormal >> 14)  & 0x0000003F;
 	uint normal     =  aPosAndNormal        & 0x000000FF;
 
 	int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;

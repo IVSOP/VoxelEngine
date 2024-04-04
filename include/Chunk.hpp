@@ -83,6 +83,7 @@ struct Chunk {
 	}
 
 	void rebuildQuads() {
+		// this is currently very cursed but faster than doing all normals at once in a single pass somehow
 		quadsHaveChanged = false;
 		for (GLuint normal = 0; normal < 6; normal ++) {
 			quads[normal].clear(); // pray that this does not change the capacity
@@ -125,6 +126,7 @@ struct Chunk {
 									break;	
 							}
 							quads[normal].emplace_back(glm::u8vec3(x, y, z), normal, voxel.material_id, ID);
+							// printf("%u %u %u: %u %u %u\n", x, y, z, quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z);
 						}
 					}
 				}

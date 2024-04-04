@@ -27,14 +27,15 @@ void main()
 {
 /* starting from the left (from FF in 0xFF000000), that is, the most significant bits
 32 bits {
-	8 - pos x
-	8 - pos y
-	8 - pos z
-	8 - normal
+	6 - pos x
+	6 - pos y
+	6 - pos z
+	last 8 - normal
 }
 
 32 bits {
 	8 - material id
+	24 - chunk id
 }
 
 normal {
@@ -49,9 +50,9 @@ normal {
 
 	// decode data from the attributes
 	// idk if this is how it should be done, I just apply the & at the end to make sure the rest of the number is zeroed out
-	uint position_x = (aPosAndNormal >> 24) & 0x000000FF;
-	uint position_y = (aPosAndNormal >> 16) & 0x000000FF;
-	uint position_z = (aPosAndNormal >> 8)  & 0x000000FF;
+	uint position_x = (aPosAndNormal >> 26) & 0x0000003F;
+	uint position_y = (aPosAndNormal >> 20) & 0x0000003F;
+	uint position_z = (aPosAndNormal >> 14)  & 0x0000003F;
 	uint normal     =  aPosAndNormal        & 0x000000FF;
 
 	int materialID = (aMaterialAndChunkID >> 24) & 0x000000FF;
