@@ -329,6 +329,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
 	ImGui::SliderFloat("break_radius", &break_radius, 1.0f, 100.0f, "break_radius = %.3f");
+	ImGui::SliderFloat("break_range", &break_range, 1.0f, 500.0f, "break_range = %.3f");
 }
 
 void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {

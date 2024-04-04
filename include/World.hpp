@@ -265,7 +265,8 @@ struct World {
 		return (x > 0) ? 1 : (x < 0) ? -1 : 0;
 	}
 
-	SelectedBlockInfo getSelectedBlock(const glm::vec3 &position, const glm::vec3 &lookPosition) {
+	SelectedBlockInfo getSelectedBlock(const glm::vec3 &position, const glm::vec3 &lookPosition, GLfloat radius) {
+		radius *= 2.0f; // to act as range
 		int x = static_cast<int>(std::floor(position.x));
 		int y = static_cast<int>(std::floor(position.y));
 		int z = static_cast<int>(std::floor(position.z));
@@ -294,9 +295,8 @@ struct World {
 		// will optimize this later
 		char face[3] = {0, 0, 0};
 
-		float radius = 10.0f; // max distance
-		constexpr int max_iter = 10; // to be removed later
-		int i = 0;
+		// constexpr int max_iter = 10; // to be removed later
+		// int i = 0;
 
 		// radius /= sqrt(dx*dx+dy*dy+dz*dz); // ?????????
 
@@ -372,7 +372,7 @@ struct World {
 			}
 
 
-			i++;
+			// i++;
 
 		}
 		// nothing found within range

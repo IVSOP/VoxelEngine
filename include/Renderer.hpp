@@ -56,6 +56,7 @@ public:
 	bool limitFPS = false;
 	double fps = 60.0f;
 	GLfloat break_radius = 5.0f;
+	GLfloat break_range = 10.0f;
 
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 

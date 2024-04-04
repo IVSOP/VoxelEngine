@@ -74,7 +74,7 @@ void Engine::renderLoop() {
 		lastFrameTime = glfwGetTime();
 
         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
-		SelectedBlockInfo selectedBlock = world.get()->getSelectedBlock(camera.get()->Position, camera.get()->Front);
+		SelectedBlockInfo selectedBlock = world.get()->getSelectedBlock(camera.get()->Position, camera.get()->Front, renderer.get()->break_range);
         inputHandler.get()->applyInputs(
 			world.get(),
 			selectedBlock,
