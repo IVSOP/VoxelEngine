@@ -30,7 +30,7 @@ void main()
 	6 - pos x
 	6 - pos y
 	6 - pos z
-	last 8 - normal
+	3 - normal
 }
 
 32 bits {
@@ -52,8 +52,8 @@ normal {
 	// idk if this is how it should be done, I just apply the & at the end to make sure the rest of the number is zeroed out
 	uint position_x = (aPosAndNormal >> 26) & 0x0000003F;
 	uint position_y = (aPosAndNormal >> 20) & 0x0000003F;
-	uint position_z = (aPosAndNormal >> 14)  & 0x0000003F;
-	uint normal     =  aPosAndNormal        & 0x000000FF;
+	uint position_z = (aPosAndNormal >> 14) & 0x0000003F;
+	uint normal     =  aPosAndNormal >> 11  & 0x00000007;
 
 	int materialID = (aMaterialAndChunkID >> 24) & 0x000000FF;
 	int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;

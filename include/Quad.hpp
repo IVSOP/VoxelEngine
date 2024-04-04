@@ -12,7 +12,7 @@ struct Quad {
 	GLint material_and_chunkid = 0;
 
 	constexpr Quad(const glm::u8vec3 &pos, GLubyte normal, GLubyte _material_id, GLint _chunk_id) {
-		position_and_normal = ((pos.x << 26) & 0xFC000000) | ((pos.y << 20) & 0x03F00000) | ((pos.z << 14) & 0x000FC000) | (normal & 0x000000FF);
+		position_and_normal = ((pos.x << 26) & 0xFC000000) | ((pos.y << 20) & 0x03F00000) | ((pos.z << 14) & 0x000FC000) | ((normal << 11) & 0x00003800);
 
 		material_and_chunkid = ((static_cast<GLuint>(_material_id) << 24) & 0xFF000000) | (_chunk_id & 0x00FFFFFF);
 	}
@@ -34,7 +34,7 @@ struct Quad {
 	}
 
 	GLubyte getNormal() const {
-		return (position_and_normal & 0x000000FF);
+		return (position_and_normal & 0x00000007);
 	}
 };
 
@@ -43,7 +43,7 @@ struct Quad {
 	6 - pos x
 	6 - pos y
 	6 - pos z
-	last 8 - normal
+	3 - normal
 }
 
 32 bits {
