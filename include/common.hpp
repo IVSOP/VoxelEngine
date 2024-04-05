@@ -39,14 +39,13 @@ struct IndirectData {
 	GLuint count;
 	GLuint instanceCount;
 	GLuint first;
-	GLuint baseInstance; // does nothing in opengl < 4.2. do I need this??????????????????????
+	GLuint baseInstance;
 
-// 												           							                      6                              
 // same as glDrawArraysInstancedBaseInstance(mode,     cmd->first,             cmd->count,         cmd->instanceCount,             cmd->baseInstance); many times
 
 
 	IndirectData()
-	: count(6), baseInstance(0) {}
+	: count(6), first(0) {}
 
 	~IndirectData() = default;
 };

@@ -104,11 +104,11 @@ struct World {
 						chunks[x][y][z].addQuadsTo(quads, 3);
 					}
 
-					end_index = quads.size() - 1;
+					end_index = quads.size();
 
 
 					// [start - end] are the indices relative to this specific chunk
-					indirect[x][y][z].first = start_index;
+					indirect[x][y][z].baseInstance = start_index;
 					indirect[x][y][z].instanceCount = end_index - start_index;
 					// printf("indirect[%u][%u][%u] is %u %u %u %u\n", x, y, z, indirect[x][y][z].count, indirect[x][y][z].primCount, indirect[x][y][z].first, indirect[x][y][z].baseInstance);
 				}

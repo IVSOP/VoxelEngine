@@ -29,7 +29,7 @@
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
 
 // on mac and windows do nothing, skill issue
-#if defined(__APPLE__) || defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
     #define GLCall(f) GLClearError();\
         f
 #else

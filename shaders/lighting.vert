@@ -1,4 +1,4 @@
-#version 410 core
+#version 460 core
 
 // this is in all instances. is this even beter than just hardcoding it depending on normal???
 layout(location = 0) in vec3 aPos; // position as a float of the default plane configuration
@@ -56,7 +56,8 @@ normal {
 	uint normal     =  aPosAndNormal >> 14  & 0x00000007;
 
 	int materialID = (aMaterialAndChunkID >> 24) & 0x000000FF;
-	int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;
+	// int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;
+	int chunkID = gl_DrawID;
 	vs_out.v_MaterialID = materialID;
 
 	// position inside chunk, added to default position

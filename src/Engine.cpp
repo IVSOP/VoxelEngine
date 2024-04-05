@@ -160,21 +160,12 @@ Engine::Engine() {
         perror("GLFW window failed to initiate");
     }
 
-#if defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 410";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
     // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 410";
+    const char* glsl_version = "#version 460";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only isto faz o que??????????????????????????????????????????????????????????????????????????????????????????????????????
-#endif
 
     this->window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
     if (window == NULL) {
@@ -217,9 +208,9 @@ Engine::Engine() {
 	std::cout << glGetString(GL_RENDERER) << std::endl;
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	// During init, enable debug output (not for macs tho skill issue)
+	// During init, enable debug output
 
-#if not (defined(__APPLE__) || defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__))
+#if not (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__))
 	glEnable( GL_DEBUG_OUTPUT );
 	glDebugMessageCallback( openglCallbackFunction, NULL );
 #endif
@@ -264,18 +255,7 @@ Engine::Engine() {
     this->windowZFar = 1000;
 
 
-	// por qualquer razao especificamente no mac nao da para criar shaders sem ter um VAO
-#ifdef __APPLE__
-	GLuint tempVAO;
-	GLCall(glGenVertexArrays(1, &tempVAO));
-	GLCall(glBindVertexArray(tempVAO));
-#endif
-
 	this->renderer = std::make_unique<Renderer>(static_cast<GLsizei>(this->windowWidth), static_cast<GLsizei>(this->windowHeight));
-
-#ifdef __APPLE__
-	GLCall(glDeleteVertexArrays(1, &tempVAO));
-#endif
 
     setWindow(window, static_cast<GLdouble>(this->windowWidth), static_cast<GLdouble>(this->windowHeight));
 

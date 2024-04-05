@@ -1,4 +1,4 @@
-#version 410 core
+#version 460 core
 
 // this is in all instances. is this even beter than just hardcoding it depending on normal???
 layout(location = 0) in vec3 aPos; // position as a float of the default plane configuration

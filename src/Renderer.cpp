@@ -473,7 +473,7 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array
 		GLCall(glBufferData(GL_DRAW_INDIRECT_BUFFER, indirect.size() * sizeof(IndirectData), indirect.data(), GL_DYNAMIC_DRAW));
 
 		// GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, quads.size()));
-		GLCall(glDrawArraysIndirect(GL_TRIANGLES, (void *)0)); // offset is 0
+		GLCall(glMultiDrawArraysIndirect(GL_TRIANGLES, (void *)0, indirect.size(), 0));
 
 		if (showAxis) {
 			drawAxis(glm::mat4(1.0f), view, projection);
