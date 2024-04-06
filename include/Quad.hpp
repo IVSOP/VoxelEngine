@@ -8,33 +8,27 @@
 // this is a quad that is processed and ready to go to the gpu in whatever weird format it expects
 // you can think of this as Vertex, but I found it confusing since I am using instances (basically I rather think about drawing instances rather than drawing vertices)
 struct Quad {
-	GLint position_and_normal = 0;
-	GLint material_and_chunkid = 0;
+	GLint data = 0;
 
 	constexpr Quad(const glm::u8vec3 &pos, GLubyte normal, GLubyte _material_id, GLint _chunk_id) {
-		position_and_normal = ((pos.x << 27) & 0xF8000000) | ((pos.y << 22) & 0x07C00000) | ((pos.z << 17) & 0x003E0000) | ((normal << 14) & 0x0001C000);
+		data = ((pos.x << 27) & 0xF8000000) | ((pos.y << 22) & 0x07C00000) | ((pos.z << 17) & 0x003E0000) | ((_material_id << 10) & 0x0001FC00) |  ((normal << 7) & 0x00000380);
 
-		material_and_chunkid = ((static_cast<GLuint>(_material_id) << 24) & 0xFF000000) | (_chunk_id & 0x00FFFFFF);
 	}
 
 	glm::uvec3 getPosition() {
 		return glm::uvec3(
-			(position_and_normal >> 27) & 0x0000001F,
-			(position_and_normal >> 22) & 0x0000001F,
-			(position_and_normal >> 17)  & 0x0000001F
+			(data >> 27) & 0x0000001F,
+			(data >> 22) & 0x0000001F,
+			(data >> 17)  & 0x0000001F
 		);
 	}
 
 	GLint getMaterialID() const {
-		return ((material_and_chunkid >> 24) & 0x000000FF);
-	}
-
-	GLuint getChunkID() const {
-		return (material_and_chunkid & 0x00FFFFFF);
+		return ((data >> 10) & 0x0000007F);
 	}
 
 	GLubyte getNormal() const {
-		return ((position_and_normal >> 14) & 0x00000007);
+		return ((data >> 7) & 0x00000007);
 	}
 };
 
@@ -43,6 +37,7 @@ struct Quad {
 	5 - pos x
 	5 - pos y
 	5 - pos z
+	7 - materialID
 	3 - normal
 }
 

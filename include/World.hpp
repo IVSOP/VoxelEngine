@@ -43,7 +43,7 @@ struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	ChunkInfo info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
 	IndirectData indirect[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
-	QuadContainer<Quad> quads; // so I dont have to constantly alloca ad free
+	QuadContainer<Quad> quads; // so I dont have to constantly alloca and free
 
 	constexpr Chunk &get(const glm::uvec3 &position) {
 		return chunks[position.x][position.y][position.z];

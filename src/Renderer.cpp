@@ -144,17 +144,11 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 	{
 		// !!!!!!!!!!! the first 3 bytes of this uint will be the position, the remaining one will be the normal
-		GLuint vertex_position_and_normal_layout = 1;
-		GLCall(glEnableVertexAttribArray(vertex_position_and_normal_layout));					// size appart				// offset
+		GLuint data_layout = 1;
+		GLCall(glEnableVertexAttribArray(data_layout));					// size appart				// offset
 		// WHAT THE FUCK????? why do I have to use glVertexAttribIPointer????????? and not glVertexAttribPointer????????????????// who tf designed this
-		GLCall(glVertexAttribIPointer(vertex_position_and_normal_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, position_and_normal)));
-		GLCall(glVertexAttribDivisor(vertex_position_and_normal_layout, 1)); // values are per instance
-
-		// !!!!!!!!!!! only the first byte has data
-		GLuint vertex_matid_layout = 2;
-		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
-		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, material_and_chunkid)));
-		GLCall(glVertexAttribDivisor(vertex_matid_layout, 1)); // values are per instance
+		GLCall(glVertexAttribIPointer(data_layout, 1, GL_INT, sizeof(Quad), (const void *)offsetof(Quad, data)));
+		GLCall(glVertexAttribDivisor(data_layout, 1)); // values are per instance
 	}
 
 	//////////////////////////// LOADING VAO FOR AXIS ////////////////////////////
@@ -482,7 +476,9 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 }
 
+// disabled for now
 void Renderer::drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, const glm::mat4 &view) {
+	return;
 	// VAO, VBO (except the data), FBO and chunk TBO are the same as in drawLighting, noit setting any of it!!!!!!!!!!!!!!!!! except vao and vbo
 	// in the future reorder draws, showAxis usually messes everything up
 

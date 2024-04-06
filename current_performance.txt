@@ -3,3 +3,4 @@ same, but separated chunks quads according to normal, to only display what can b
 same, added culling for when there are voxels facing each other, but only inside the same chunk, max fps (165)
 full 16x16x16 world: 59fps
 full 16x16x16 world, with custom quad array: 68 fps
+changed to 1B quads, 135fps
