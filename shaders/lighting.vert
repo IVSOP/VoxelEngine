@@ -5,8 +5,7 @@ layout(location = 0) in vec3 aPos; // position as a float of the default plane c
 
 // this is for every istance
 // could be uint, int for compatibility reasons or something, but the underlying data actually does not matter as long as it has 32 bits
-layout(location = 1) in int aPosAndNormal; // 3 first bytes are the actual data, xyz, the 1 remaining is the normal (0 - 6)
-layout(location = 2) in int aMaterialAndChunkID; // only the first byte actually has the data
+layout(location = 1) in int aData;
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
@@ -30,6 +29,7 @@ void main()
 	5 - pos x
 	5 - pos y
 	5 - pos z
+	7 - materialID
 	3 - normal
 }
 
@@ -47,16 +47,15 @@ normal {
 	5 + x (right)
 }
 */
-
 	// decode data from the attributes
 	// idk if this is how it should be done, I just apply the & at the end to make sure the rest of the number is zeroed out
-	uint position_x = (aPosAndNormal >> 27) & 0x0000001F;
-	uint position_y = (aPosAndNormal >> 22) & 0x0000001F;
-	uint position_z = (aPosAndNormal >> 17) & 0x0000001F;
-	uint normal     =  aPosAndNormal >> 14  & 0x00000007;
+	uint position_x = (aData >> 27) & 0x0000001F;
+	uint position_y = (aData >> 22) & 0x0000001F;
+	uint position_z = (aData >> 17) & 0x0000001F;
+	int materialID  = (aData >> 10) & 0x0000007F;
+	uint normal     = (aData >>  7) & 0x00000007;
 
-	int materialID = (aMaterialAndChunkID >> 24) & 0x000000FF;
-	// int chunkID    =  aMaterialAndChunkID        & 0x00FFFFFF;
+
 	int chunkID = gl_DrawID;
 	vs_out.v_MaterialID = materialID;
 
