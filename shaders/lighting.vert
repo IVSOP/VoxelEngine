@@ -53,8 +53,6 @@ normal {
 	uint position_y = (aData >> 22) & 0x0000001F;
 	uint position_z = (aData >> 17) & 0x0000001F;
 	int materialID  = (aData >> 10) & 0x0000007F;
-	uint normal     = (aData >>  7) & 0x00000007;
-
 
 	int chunkID = gl_DrawID;
 	vs_out.v_MaterialID = materialID;
@@ -65,6 +63,10 @@ normal {
 	// rotate it depending on normal
 	// there are probably better ways to do this
 	// to get texture coordinates, since each voxel represents a pixel on a 32x32x32 chunk, and the texture represents the side of the entire chunk, just divide pos by 31. however, this depends on orientation so is done here
+
+	vec3 chunk_position = texelFetch(u_ChunkInfoTBO, chunkID * VEC4_IN_CHUNKINFO).xyz;
+	int normal = int(trunc(texelFetch(u_ChunkInfoTBO, chunkID * VEC4_IN_CHUNKINFO).w)); // I dont think trunc is needed
+	// 0 - 5 can be precisely represented as floats
 
 	switch(normal) {
 		case 0:
@@ -102,7 +104,6 @@ normal {
 			break;
 	}
 
-	vec3 chunk_position = texelFetch(u_ChunkInfoTBO, chunkID * VEC4_IN_CHUNKINFO).xyz;
 	position += vec3(float(position_x) + chunk_position.x, float(position_y) + chunk_position.y, float(position_z) + chunk_position.z);
 
 	vec4 viewspace_pos = u_View * u_Model * vec4(position, 1.0);

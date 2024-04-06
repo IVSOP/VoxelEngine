@@ -4,3 +4,4 @@ same, added culling for when there are voxels facing each other, but only inside
 full 16x16x16 world: 59fps
 full 16x16x16 world, with custom quad array: 68 fps
 changed to 1B quads, 135fps
+removed normal from vertices, 120fps, but allows other optimizations later

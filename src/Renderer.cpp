@@ -194,7 +194,6 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	//////////////////////////// INDIRECT BUFFER ////////////////////////////
 	GLCall(glGenBuffers(1, &this->indirectBuffer));
 	GLCall(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this->indirectBuffer));
-	GLCall(glBufferData(GL_DRAW_INDIRECT_BUFFER, 5 * sizeof(GLuint), NULL, GL_DYNAMIC_DRAW));
 
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	lightingShader.use();
@@ -332,7 +331,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::SliderFloat("break_range", &break_range, 1.0f, 500.0f, "break_range = %.3f");
 }
 
-void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array<IndirectData> &indirect, const custom_array<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<IndirectData> &indirect, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -444,7 +443,6 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const custom_array
 		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
 		lightingShader.setInt("u_NumSpotLights", 0);
 
-
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, chunkInfoBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, chunkInfo.size() * sizeof(ChunkInfo), chunkInfo.data(), GL_STATIC_DRAW));
 		GLCall(glActiveTexture(GL_TEXTURE0 + CHUNKINFO_TEXTURE_BUFFER_SLOT));
@@ -482,45 +480,45 @@ void Renderer::drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const g
 	// VAO, VBO (except the data), FBO and chunk TBO are the same as in drawLighting, noit setting any of it!!!!!!!!!!!!!!!!! except vao and vbo
 	// in the future reorder draws, showAxis usually messes everything up
 
-		GLCall(glBindVertexArray(this->VAO));
+		// GLCall(glBindVertexArray(this->VAO));
 
-		Quad quad = Quad(selectedBlock.position, selectedBlock.normal, selectedBlock.materialID, selectedBlock.chunkID);
-		// printf("quad at %u %u %u material %d chunk %u normal %u \n", quad.getPosition().x, quad.getPosition().y, quad.getPosition().z, quad.getMaterialID(), quad.getChunkID(), quad.getNormal());
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
-		GLCall(glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(Quad), &quad, GL_STATIC_DRAW));
+		// Quad quad = Quad(selectedBlock.position, selectedBlock.normal, selectedBlock.materialID, selectedBlock.chunkID);
+		// // printf("quad at %u %u %u material %d chunk %u normal %u \n", quad.getPosition().x, quad.getPosition().y, quad.getPosition().z, quad.getMaterialID(), quad.getChunkID(), quad.getNormal());
+		// GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
+		// GLCall(glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(Quad), &quad, GL_STATIC_DRAW));
 
-		// constexpr glm::mat4 model = glm::mat4(1.5f);
-		// can be optimized
-		glm::mat4 model;
-		switch (selectedBlock.normal) {
-			case 0:
-				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.02f, 0.0f));
-				break;
-			case 1:
-				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.02f, 0.0f));
-				break;
-			case 2:
-				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.02f));
-				break;
-			case 3:
-				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.02f));
-				break;
-			case 4:
-				model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.02f, 0.0f, 0.0f));
-				break;
-			case 5:
-				model = glm::translate(glm::mat4(1.0f), glm::vec3(0.02f, 0.0f, 0.0f));
-				break;
-		}
+		// // constexpr glm::mat4 model = glm::mat4(1.5f);
+		// // can be optimized
+		// glm::mat4 model;
+		// switch (selectedBlock.normal) {
+		// 	case 0:
+		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.02f, 0.0f));
+		// 		break;
+		// 	case 1:
+		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.02f, 0.0f));
+		// 		break;
+		// 	case 2:
+		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.02f));
+		// 		break;
+		// 	case 3:
+		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.02f));
+		// 		break;
+		// 	case 4:
+		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.02f, 0.0f, 0.0f));
+		// 		break;
+		// 	case 5:
+		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.02f, 0.0f, 0.0f));
+		// 		break;
+		// }
 
-		highlightShader.use();
-		highlightShader.setMat4("u_Model", model);
-		highlightShader.setMat4("u_View", view);
-		highlightShader.setMat4("u_Projection", projection);
-		highlightShader.setInt("u_ChunkInfoTBO", CHUNKINFO_TEXTURE_BUFFER_SLOT);
-		highlightShader.setFloat("u_BloomThreshold", bloomThreshold);
+		// highlightShader.use();
+		// highlightShader.setMat4("u_Model", model);
+		// highlightShader.setMat4("u_View", view);
+		// highlightShader.setMat4("u_Projection", projection);
+		// highlightShader.setInt("u_ChunkInfoTBO", CHUNKINFO_TEXTURE_BUFFER_SLOT);
+		// highlightShader.setFloat("u_BloomThreshold", bloomThreshold);
 
-		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1));
+		// GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1));
 }
 
 void Renderer::bloomBlur(int passes) {
@@ -615,7 +613,7 @@ void Renderer::endFrame(GLFWwindow * window) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::draw(const QuadContainer<Quad> &quads, const custom_array<IndirectData> &indirect, const custom_array<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const QuadContainer<Quad> &quads, const std::vector<IndirectData> &indirect, const std::vector<ChunkInfo> &chunkInfo, const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(quads, indirect, chunkInfo, projection, view, camera);

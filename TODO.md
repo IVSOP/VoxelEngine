@@ -6,7 +6,9 @@
 - [x] Cull faces that are not touching air
 - [x] 4B quads
 - [x] glMultiDrawArraysIndirect
-- [ ] remove normal from quads
+- [ ] do not try to draw chunks that have nothing (do not add to info or indirect)
+- [ ] smart system for redrawing chunks/ building their data
+- [ ] precomputed chunk positions vs CPU math vs GPU math
 - [ ] Single triangle per quad
 - [ ] LOD system
 - [ ] Multithreading

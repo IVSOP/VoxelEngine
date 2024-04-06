@@ -41,76 +41,119 @@
 
 struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
-	ChunkInfo info[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
-	IndirectData indirect[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
-	QuadContainer<Quad> quads; // so I dont have to constantly alloca and free
+	std::vector<ChunkInfo> info; // [WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
+	std::vector<IndirectData> indirect; // avoid the first alocations, try different numbers
+	
+	QuadContainer<Quad> quads; // so I dont have to constantly alloc and free
 
 	constexpr Chunk &get(const glm::uvec3 &position) {
 		return chunks[position.x][position.y][position.z];
 	}
 
-	const custom_array<ChunkInfo> getInfo() {
-		return custom_array(&info[0][0][0], WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z); // ??????? use [max] and not [max - 1] ??????? idk, it works
+	std::vector<ChunkInfo> &getInfo() {
+		return info;
 	}
 
 	QuadContainer<Quad> &getQuads() {
 		return quads;
 	}
-	
-	custom_array<IndirectData> getIndirect() {
-		return custom_array(&indirect[0][0][0], WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z);
+
+	std::vector<IndirectData> &getIndirect() {
+		return indirect;
 	}
 
 	// also this can probably be optimized but for now I will leave it to compiler magic
+	// yes very ugly will clean this up later
+	// make player position align to the chunk somehow???????/ doing == on floats is kind of bad
 	void buildData(const glm::vec3 &playerPosition) {
 		quads.clear();
+		indirect.clear();
+		info.clear();
 
 		GLuint start_index = 0, end_index = 0;
-		GLuint chunkID;
 
 		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
 				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
 
 					const glm::vec3 coords = getChunkCoordsFloat(x, y, z);
-					// chunkID = getChunkID(x, y, z); // not even needed, could just be a counter, need to test using counter and indirect being a 1D array
-					start_index = end_index; 
-
 
 					if (playerPosition.y > coords.y + CHUNK_SIZE_FLOAT) {
-						chunks[x][y][z].addQuadsTo(quads, 1);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 1); // copy quads into  my array
+
+						indirect.emplace_back(start_index, end_index - start_index); // add indirect data
+						info.emplace_back(coords, 1.0f); // add to the info buffer, for this normal
 					} else if (playerPosition.y < coords.y) {
-						chunks[x][y][z].addQuadsTo(quads, 0);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 0);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 0.0f);
 					} else { // at same height
-						chunks[x][y][z].addQuadsTo(quads, 0);
-						chunks[x][y][z].addQuadsTo(quads, 1);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 0);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 0.0f);
+						start_index = end_index;
+
+						end_index += chunks[x][y][z].addQuadsTo(quads, 1);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 1.0f);
 					}
+					start_index = end_index;
 
 					if (playerPosition.x > coords.x + CHUNK_SIZE_FLOAT) {
-						chunks[x][y][z].addQuadsTo(quads, 5);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 5);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 5.0f);
+
 					} else if (playerPosition.x < coords.x) {
-						chunks[x][y][z].addQuadsTo(quads, 4);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 4);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 4.0f);
+
 					} else {
-						chunks[x][y][z].addQuadsTo(quads, 4);
-						chunks[x][y][z].addQuadsTo(quads, 5);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 4);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 4.0f);
+						start_index = end_index;
+
+						end_index += chunks[x][y][z].addQuadsTo(quads, 5);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 5.0f);
+
 					}
+					start_index = end_index;
 
 					if (playerPosition.z > coords.z + CHUNK_SIZE_FLOAT) {
-						chunks[x][y][z].addQuadsTo(quads, 3);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 3);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 3.0f);
+
 					} else if (playerPosition.z < coords.z) {
-						chunks[x][y][z].addQuadsTo(quads, 2);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 2);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 2.0f);
+
 					} else {
-						chunks[x][y][z].addQuadsTo(quads, 2);
-						chunks[x][y][z].addQuadsTo(quads, 3);
+						end_index += chunks[x][y][z].addQuadsTo(quads, 2);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 2.0f);
+						start_index = end_index;
+
+						end_index += chunks[x][y][z].addQuadsTo(quads, 3);
+
+						indirect.emplace_back(start_index, end_index - start_index);
+						info.emplace_back(coords, 3.0f);
 					}
-
-					end_index = quads.size();
-
-
-					// [start - end] are the indices relative to this specific chunk
-					indirect[x][y][z].baseInstance = start_index;
-					indirect[x][y][z].instanceCount = end_index - start_index;
-					// printf("indirect[%u][%u][%u] is %u %u %u %u\n", x, y, z, indirect[x][y][z].count, indirect[x][y][z].primCount, indirect[x][y][z].first, indirect[x][y][z].baseInstance);
+					start_index = end_index;
 				}
 			}
 		}
@@ -158,33 +201,12 @@ struct World {
 	}
 
 	World()
-	: quads(1 << 10) // why td is 2e10 20000000000?????????????
+	: quads(1 << 10), info(1 << 10), indirect(1 << 10) // why td is 2e10 20000000000?????????????
 	{
-		// build the info
-		for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
-			for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
-				for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-					info[x][y][z] = ChunkInfo(
-						getChunkCoordsFloat(x, y, z)
-					);
-					chunks[x][y][z].ID = &chunks[x][y][z] - &chunks[0][0][0];// idc let the compiler sort this out
-					// printf("ID %u is in %f %f %f\n", chunks[x][y][z].ID, info[x][y][z].position.x, info[x][y][z].position.y, info[x][y][z].position.z);
-				}
-			}
-		}
 	}
 
 	void copyChunkTo(const Chunk &chunk, const glm::uvec3 position) {
-		// printf("\n\nThe id of the chunk in %u %u %u is %u. Its info position is %f %f %f\n\n",
-		// 	position.x, position.y, position.z,
-		// 	chunks[position.x][position.y][position.z].ID,
-		// 	info[position.x][position.y][position.z].position.x,
-		// 	info[position.x][position.y][position.z].position.y,
-		// 	info[position.x][position.y][position.z].position.z);
-		GLuint ID = chunks[position.x][position.y][position.z].ID;
 		chunks[position.x][position.y][position.z] = chunk;
-		// for safety, so it applies new ID to all quads (ID was probably not defined, if it was then remove this)
-		chunks[position.x][position.y][position.z].ID = ID;
 		chunks[position.x][position.y][position.z].quadsHaveChanged = true;
 	}
 

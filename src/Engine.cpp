@@ -83,7 +83,7 @@ void Engine::renderLoop() {
 
         // std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // renderer.get()->draw(draw_quads, projection, *camera.get(), window, deltaTime);
-		world.get()->buildData(this->camera.get()->Position);
+    	world.get()->buildData(this->camera.get()->Position);
 		renderer.get()->draw(
 			world.get()->getQuads(),
 			world.get()->getIndirect(),

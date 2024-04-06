@@ -34,17 +34,14 @@ struct Voxel {
 // struct sent to gpu in the chunk TBO
 struct ChunkInfo {
 	glm::vec3 position;
-
-	GLfloat padding_1;
+	GLfloat normal;
 	
-	ChunkInfo() : position(0.0f) {}
-	ChunkInfo(const glm::vec3 &position) : position(position) {};
+	ChunkInfo() : position(0.0f), normal(6.0f) {}
+	ChunkInfo(const glm::vec3 &position, GLfloat normal) : position(position), normal(normal) {};
 };
 static_assert(sizeof(ChunkInfo) == 1 * sizeof(glm::vec4), "Error: ChunkInfo has unexpected size");
 
 struct Chunk {
-	GLuint ID = 0; // might get removed from here later
-
 	// 3D array, [y][z][x] (height, depth, width). this can easily be moved around to test what gets better cache performance
 	Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	bool quadsHaveChanged = false;
@@ -71,11 +68,13 @@ struct Chunk {
 		return this->quads[normal];
 	}
 
-	constexpr void addQuadsTo(QuadContainer<Quad> &_quads, GLuint normal) {
+	// returns how much was added
+	constexpr GLuint addQuadsTo(QuadContainer<Quad> &_quads, GLuint normal) {
 		if (quadsHaveChanged) {
 			rebuildQuads();
 		}
 		_quads.add(quads[normal]);
+		return quads[normal].size();
 	}
 
 	constexpr bool voxelAt(GLuint y, GLuint z, GLuint x) {
@@ -125,7 +124,7 @@ struct Chunk {
 									}
 									break;	
 							}
-							quads[normal].emplace_back(glm::u8vec3(x, y, z), normal, voxel.material_id, ID);
+							quads[normal].emplace_back(glm::u8vec3(x, y, z), voxel.material_id);
 							// printf("%u %u %u: %u %u %u\n", x, y, z, quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z);
 						}
 					}
