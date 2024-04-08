@@ -6,8 +6,8 @@
 struct Quad {
 	GLint data = 0;
 
-	constexpr Quad(const glm::u8vec3 &pos, GLubyte _material_id) {
-		data = ((pos.x << 27) & 0xF8000000) | ((pos.y << 22) & 0x07C00000) | ((pos.z << 17) & 0x003E0000) | ((_material_id << 10) & 0x0001FC00);
+	constexpr Quad(const glm::u8vec3 &pos, GLubyte _material_id, GLubyte len_x, GLubyte len_y) {
+		data = ((pos.x << 27) & 0xF8000000) | ((pos.y << 22) & 0x07C00000) | ((pos.z << 17) & 0x003E0000) | ((_material_id << 10) & 0x0001FC00) | ((len_x << 5) & 0x000003E0) | (len_y & 0x0000001F);
 
 	}
 
@@ -22,6 +22,13 @@ struct Quad {
 	GLint getMaterialID() const {
 		return ((data >> 10) & 0x0000007F);
 	}
+
+	glm::uvec2 getLen() const {
+		return glm::uvec2(
+			(data >> 5) & 0x0000001F,
+			 data       & 0x0000001F
+		);
+	}
 };
 
 /* starting from the left (from FF in 0xFF000000), that is, the most significant bits
@@ -30,12 +37,8 @@ struct Quad {
 	5 - pos y
 	5 - pos z
 	7 - materialID
-	3 - normal
-}
-
-32 bits {
-	8 - material id
-	24 - chunk id
+	5 - len_x
+	5 - len_y
 }
 */
 

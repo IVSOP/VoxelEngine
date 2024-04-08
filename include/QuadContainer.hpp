@@ -52,6 +52,14 @@ public:
 		_sp ++;
 	}
 
+	constexpr T &operator[](std::size_t index) const {
+        return _data[index];
+    }
+
+	constexpr T &operator[](std::size_t index) {
+        return _data[index];
+    }
+
 	constexpr T * data() const { return _data; } // const?????
 	constexpr std::size_t size() const { return _sp; }
 	constexpr std::size_t capacity() const { return _capacity; }

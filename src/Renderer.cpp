@@ -327,18 +327,26 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
 	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
+	ImGui::Checkbox("Wireframe", &wireframe);
 	ImGui::SliderFloat("break_radius", &break_radius, 1.0f, 100.0f, "break_radius = %.3f");
 	ImGui::SliderFloat("break_range", &break_range, 1.0f, 500.0f, "break_range = %.3f");
+	
 }
 
 void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<IndirectData> &indirect, const std::vector<ChunkInfo> &chunkInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
+	// for (GLuint i = 0; i < quads.size(); i++) {
+	// 	printf("[%u] quad position: %u %u %u len: %u %u\n", i, quads[i].getPosition().x, quads[i].getPosition().y, quads[i].getPosition().z, quads[i].getLen().x, quads[i].getLen().y);
+	// }
+
 	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+		if (wireframe) {
+			GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+		}
 		// glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 		GLCall(glBindVertexArray(this->VAO));
@@ -471,7 +479,9 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
 
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		if (wireframe) {
+			GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		}
 }
 
 // disabled for now

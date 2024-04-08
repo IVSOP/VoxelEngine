@@ -54,6 +54,7 @@ public:
 	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, bloomOffset = 1.0f, explodeCoeff = 0.0f;
 	int bloomBlurPasses = 5;
 	bool showAxis = true;
+	bool wireframe = false;
 	bool limitFPS = false;
 	double fps = 60.0f;
 	GLfloat break_radius = 5.0f;

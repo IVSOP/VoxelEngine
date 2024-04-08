@@ -239,7 +239,7 @@ Engine::Engine() {
 
     GLdouble cameraXPos = 64;
     GLdouble cameraYPos = 64;
-    GLdouble cameraZPos = 64;
+    GLdouble cameraZPos = -264;
     GLdouble cameraXLook = 0;
     GLdouble cameraYLook = 0;
     GLdouble cameraZLook = 0;
@@ -265,6 +265,7 @@ Engine::Engine() {
 	Chunk chunk;
 	Voxel voxel = Voxel(0);
 	for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+		if (y == 15) continue;
 		for (GLuint z = 0; z < CHUNK_SIZE; z++) {
 			for (GLuint x = 0; x < CHUNK_SIZE; x++) {
 				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
@@ -282,6 +283,9 @@ Engine::Engine() {
 		}
 	}
 	
+	// world.get()->copyChunkTo(chunk, glm::uvec3(8, 8, 0));
+	// world.get()->copyChunkTo(chunk, glm::uvec3(8, 9, 0));
+
 	// //floor and ceiling
 	// for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
 	// 		for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
