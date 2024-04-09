@@ -97,39 +97,51 @@ struct Chunk {
 		// go from left to right until unable to do so
 		visited[_y].setTrue(_x);
 		for (_x = _x + 1; _x < CHUNK_SIZE; _x++) {
-			if (visited[_y][_x] == true) break;
+			if (visited[_y][_x] == true) break; // seems off, use findNext instead of x++????
+			visited[_y].setTrue(_x);
 
 			const Voxel &voxel = voxels[_y][z][_x];
-			if (voxel.material_id == og_material) { // no need to check if it is empty, this check does everything
-				// check if anything is occluded.........
-				visited[_y].setTrue(_x);
+			if (voxel.isEmpty()) { // or occluded......... we can mark it as visited, it will be useless
+				break;
+			}
 
-			} else {
+			if (voxel.material_id != og_material) { // we cannot mark it as visited now, it might be useful in the future
+				// pretend it was never visited
+				visited[_y].setFalse(_x);
 				break;
 			}
 		}
 
 		GLuint max_x = _x - 1;
+		
 
 		// horizontal pass has finished, now for the vertical pass
 		// starts already at the line above
 		bool end = false;
 		for (_y = _y + 1; !end && _y < CHUNK_SIZE; _y++) {
 			// every single voxel added needs to have a valid voxel above them, otherwise break
-			for (_x = og_x; _x < CHUNK_SIZE; _x++) {
+			for (_x = og_x; _x <= max_x; _x++) {
 				if (visited[_y][_x]) break;
 
 
 				const Voxel &voxel = voxels[_y][z][_x];
-				if (voxel.material_id == og_material) { // no need to check if it is empty, this check does everything
+				if (voxel.isEmpty()) { // or occluded......... we can mark it as visited, it will be useless
 					visited[_y].setTrue(_x);
-					// check if anything is occluded.........
-
-				} else {
 					end = true;
-					_y--; // idfk
 					break;
 				}
+				// could be else and remove body from above
+				if (voxel.material_id != og_material) { // we cannot mark it as visited now, it might be useful in the future
+					end = true;
+					break;
+				}
+			}
+			if (end) {
+				break;
+			}
+			// reached the end of the line and everything is fine, need to mark everything we went through as visited
+			for (GLuint temp_x = og_x; temp_x < _x; temp_x++) {
+				visited[_y].setTrue(temp_x);
 			}
 		}
 
@@ -159,19 +171,20 @@ struct Chunk {
 					{
 						GLuint x = 0, x_copy = 0, y, y_copy;
 						// due to how the greedy meshing is done, it will be over when the top row is already fully visited
-						for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+						// for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+						for (GLuint z = 31; z < CHUNK_SIZE; z++) {
 							for (GLuint i = 0; i < CHUNK_SIZE; i++) {
 								visited[i].clear();
 							}
 							for (y = 0; y < CHUNK_SIZE; y++) {
 								for (x = visited[y].findNext(); x < CHUNK_SIZE; x = visited[y].findNext()) {
 									visited[y].setTrue(x);
+									// check occlusion here !!!!!!!!!!!!!!!!!!!!!!!!!!
 									if (voxels[y][z][x].isEmpty()) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
 
-									// check occlusion etc
 
 									x_copy = x;
 									y_copy = y;
@@ -184,11 +197,11 @@ struct Chunk {
 															   voxels[y][z][x].material_id,
 															   static_cast<GLfloat>(x_copy - x), static_cast<GLfloat>(y_copy - y));
 
-									printf("quad position: %u %u %u len: %u %u\n", quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z, quads[normal].back().getLen().x, quads[normal].back().getLen().y);
+									// printf("quad position: %u %u %u len: %u %u\n", quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z, quads[normal].back().getLen().x, quads[normal].back().getLen().y);
 									// y = 32; break;
 								}
 							}
-						break;
+							// exit(1);
 						}
 					}
 
