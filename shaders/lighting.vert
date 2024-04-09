@@ -95,11 +95,12 @@ normal {
 		case 3:
 			// just bring it foward
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, -1.0);
+
 			position.z = 1.0;
 			position.xy *= len;
 
-			rel_pos.xy += position.xy;
-			vs_out.v_TexCoord = vec2(1.0 - (rel_pos.x / 32.0), rel_pos.y / 32.0);
+			position += rel_pos;
+			vs_out.v_TexCoord = vec2(1.0 - (position.x / 32.0), position.y / 32.0);
 			break;
 		case 4:
 			vs_out.v_Normal = u_NormalMatrix * vec3(-1.0, 0.0, 0.0);

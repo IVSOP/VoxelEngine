@@ -382,9 +382,10 @@ struct World {
 					else if (face[2] == -1) blockInfo.normal = NORMAL_NEG_Z;
 					return blockInfo;
 				}
-			} else { // is this needed????????
-				break;
 			}
+			// else {
+			// 	break;
+			// }
 
 			if (tMaxX < tMaxY) {
 				if (tMaxX < tMaxZ) {
