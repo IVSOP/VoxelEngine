@@ -71,16 +71,22 @@ normal {
 	switch(normal) {
 		case 0:
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, -1.0, 0.0);
-			position.yz = position.zy;
-			vs_out.v_TexCoord = vec2(rel_pos.x / 32.0, rel_pos.z / 32.0);
 
+			position.yz = position.zy;
+			position.xz *= len;
+
+			position += rel_pos;
+			vs_out.v_TexCoord = vec2(position.x / 32.0, position.z / 32.0);
 			break;
 		case 1:
 			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 1.0, 0.0);
+
 			position.z = 1.0 - position.y;
 			position.y = 1.0;
-			vs_out.v_TexCoord = vec2(rel_pos.x / 32.0, 1.0 - (rel_pos.z / 32.0));
+			position.xz *= len;
 
+			position += rel_pos;
+			vs_out.v_TexCoord = vec2(position.x / 32.0, 1.0 - (position.z / 32.0));
 			break;
 		case 2:
 			// normal is just hardcoded
@@ -104,16 +110,22 @@ normal {
 			break;
 		case 4:
 			vs_out.v_Normal = u_NormalMatrix * vec3(-1.0, 0.0, 0.0);
+			
 			position.xyz = position.zyx;
-			vs_out.v_TexCoord = vec2(rel_pos.z / 32.0, rel_pos.y / 32.0);
+			position.zy *= len;
 
+			position += rel_pos;
+			vs_out.v_TexCoord = vec2(position.z / 32.0, position.y / 32.0);
 			break;
 		case 5:
 			vs_out.v_Normal = u_NormalMatrix * vec3(1.0, 0.0, 0.0);
+
 			position.z = 1.0 - position.x;
 			position.x = 1.0;
-			vs_out.v_TexCoord = vec2(1.0 - (rel_pos.z / 32.0), rel_pos.y / 32.0);
+			position.zy *= len;
 
+			position += rel_pos;
+			vs_out.v_TexCoord = vec2(1.0 - (position.z / 32.0), position.y / 32.0);
 			break;
 	}
 

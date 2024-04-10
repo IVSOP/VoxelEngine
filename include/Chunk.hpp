@@ -92,6 +92,7 @@ struct Chunk {
 				case 0: // bottom
 					// slices used are [z][x]
 
+
 					break;
 				case 1: // top
 					// slices used are [z][x]
@@ -111,8 +112,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (x = visited[y].findNext(); x < CHUNK_SIZE; x = visited[y].findNext()) {
 									visited[y].setTrue(x);
-									// check occlusion here !!!!!!!!!!!!!!!!!!!!!!!!!!
-									if (voxels[y][z][x].isEmpty()) {
+									if (voxels[y][z][x].isEmpty() || (z > 0 && voxelAt(y, z - 1, x))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -132,7 +132,7 @@ struct Chunk {
 										visited[y].setTrue(x);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty()) { // or occluded......... we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (z > 0 && voxelAt(y, z - 1, x))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -155,7 +155,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty()) { // or occluded......... we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (z > 0 && voxelAt(y, z - 1, x))) { // we can mark it as visited, it will be useless
 												visited[y].setTrue(x);
 												end = true;
 												break;
@@ -184,11 +184,10 @@ struct Chunk {
 									// printf("creating quad from %u %u %u to %u %u\n", x_copy, y_copy, z, x, y);
 
 									quads[normal].emplace_back(glm::u8vec3(x_copy, y_copy, z),
-															   voxels[y_copy][z][x_copy].material_id,
+															   material,
 															   static_cast<GLfloat>(x - x_copy), static_cast<GLfloat>(y - y_copy));
 
 									// printf("quad position: %u %u %u len: %u %u\n", quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z, quads[normal].back().getLen().x, quads[normal].back().getLen().y);
-									x = x_copy;
 									y = y_copy;
 								}
 							}
@@ -210,9 +209,8 @@ struct Chunk {
 							for (y = 0; y < CHUNK_SIZE; y++) {
 								// in every line every x has to be processed
 								for (x = visited[y].findNext(); x < CHUNK_SIZE; x = visited[y].findNext()) {
-									visited[y].setTrue(x);
-									// check occlusion here !!!!!!!!!!!!!!!!!!!!!!!!!!
-									if (voxels[y][z][x].isEmpty()) {
+									visited[y].setTrue(x);				// check for occlusion
+									if (voxels[y][z][x].isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -232,7 +230,7 @@ struct Chunk {
 										visited[y].setTrue(x);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty()) { // or occluded......... we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -255,7 +253,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty()) { // or occluded......... we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x))) { // we can mark it as visited, it will be useless
 												visited[y].setTrue(x);
 												end = true;
 												break;
@@ -284,11 +282,11 @@ struct Chunk {
 									// printf("creating quad from %u %u %u to %u %u\n", x_copy, y_copy, z, x, y);
 
 									quads[normal].emplace_back(glm::u8vec3(x_copy, y_copy, z),
-															   voxels[y_copy][z][x_copy].material_id,
+															   material,
 															   static_cast<GLfloat>(x - x_copy), static_cast<GLfloat>(y - y_copy));
 
 									// printf("quad position: %u %u %u len: %u %u\n", quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z, quads[normal].back().getLen().x, quads[normal].back().getLen().y);
-									x = x_copy;
+									// x = x_copy;
 									y = y_copy;
 								}
 							}
@@ -302,54 +300,54 @@ struct Chunk {
 					break;
 				case 5: // right
 					// slices used are [y][z]
-
 					break;
 			}
 
-			// for (GLuint y = 0; y < CHUNK_SIZE; y++) {
-			// 	for (GLuint z = 0; z < CHUNK_SIZE; z++) {
-			// 		for (GLuint x = 0; x < CHUNK_SIZE; x++) {
-			// 			const Voxel &voxel = voxels[y][z][x];
-			// 			if (! voxel.isEmpty()) {
-			// 				switch(normal) { // the compiler will probably unroll the entire loop, but later I might do it manually anyway. this can also be optimized to only check uneven voxel positions and build everything from them
-			// 					case 0:
-			// 						if (y > 0 && voxelAt(y - 1, z, x)) {
-			// 							continue;
-			// 						}
-			// 						break;
-			// 					case 1:
-			// 						if (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x)) {
-			// 							continue;
-			// 						}
-			// 						// printf("I am at %u %u %u, and did not detect voxel above: voxelAt(%u, %u, %u) was %u \n", x, y, z, y + 1, z, x, voxelAt(y + 1, z, x));
-			// 						break;
-			// 					case 2:
-			// 						if (z > 0 && voxelAt(y, z - 1, x)) {
-			// 							continue;
-			// 						}
-			// 						break;
-			// 					case 3:
-			// 						if (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x)) {
-			// 							continue;
-			// 						}
-			// 						break;
-			// 					case 4:
-			// 						if (x > 0 && voxelAt(y, z, x - 1)) {
-			// 							continue;
-			// 						}
-			// 						break;
-			// 					case 5:
-			// 						if (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1)) {
-			// 							continue;
-			// 						}
-			// 						break;	
-			// 				}
-			// 				quads[normal].emplace_back(glm::u8vec3(x, y, z), voxel.material_id, 1.0f, 1.0f);
-			// 				// printf("%u %u %u: %u %u %u\n", x, y, z, quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z);
-			// 			}
-			// 		}
-			// 	}
-			// }
+			for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+				for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+					for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+						const Voxel &voxel = voxels[y][z][x];
+						if (! voxel.isEmpty()) {
+							switch(normal) { // the compiler will probably unroll the entire loop, but later I might do it manually anyway. this can also be optimized to only check uneven voxel positions and build everything from them
+								case 0:
+									if (y > 0 && voxelAt(y - 1, z, x)) {
+										continue;
+									}
+									break;
+								case 1:
+									if (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x)) {
+										continue;
+									}
+									break;
+								case 2:
+									// if (z > 0 && voxelAt(y, z - 1, x)) {
+									// 	continue;
+									// }
+									// break;
+									continue;
+								case 3:
+									// if (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x)) {
+									// 	continue;
+									// }
+									// break;
+									continue;
+								case 4:
+									if (x > 0 && voxelAt(y, z, x - 1)) {
+										continue;
+									}
+									break;
+								case 5:
+									if (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1)) {
+										continue;
+									}
+									break;	
+							}
+							quads[normal].emplace_back(glm::u8vec3(x, y, z), voxel.material_id, 0.0f, 0.0f);
+							// printf("%u %u %u: %u %u %u\n", x, y, z, quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z);
+						}
+					}
+				}
+			}
 		}
 	}
 };
