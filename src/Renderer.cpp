@@ -392,7 +392,7 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 
 		PointLight pointLights[MAX_LIGHTS];
 		pointLights[0] = {
-			.position = glm::vec3(0.0f, 2.0f, 5.0f),
+			.position = glm::vec3(0.0f, 260.0f, 0.0f),
 			.constant = 1.0f,
 			.linear = 0.09f,
 			.quadratic = 0.032f,

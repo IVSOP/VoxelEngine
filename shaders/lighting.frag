@@ -167,7 +167,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
     vec3 ambient = light.ambient * material.ambient.xyz;
 
 	// diffuse 
-    vec3 lightDir = normalize(- (mat3(u_View) * light.direction)); // pretty sure this is bad but it works fine??????????????
+    vec3 lightDir = normalize(vec3(u_View * ( - vec4(light.direction, 0.0)))); // pretty sure this is bad but it works fine?????????????? // I changed this from normalize(- (mat3(u_View) * light.direction)); but it's the same I think
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = light.diffuse * (diff * material.diffuse.xyz);
 

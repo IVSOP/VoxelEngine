@@ -90,7 +90,7 @@ normal {
 			break;
 		case 2:
 			// normal is just hardcoded
-			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, 1.0);
+			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, -1.0);
 
 			position.x = 1.0 - position.x;
 			position.xy *= len;
@@ -100,7 +100,7 @@ normal {
 			break;
 		case 3:
 			// just bring it foward
-			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, -1.0);
+			vs_out.v_Normal = u_NormalMatrix * vec3(0.0, 0.0, 1.0);
 
 			position.z = 1.0;
 			position.xy *= len;

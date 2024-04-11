@@ -5,3 +5,5 @@ full 16x16x16 world: 59fps
 full 16x16x16 world, with custom quad array: 68 fps
 changed to 1B quads, 135fps
 removed normal from vertices, 120fps, but allows other optimizations later
+added greedy meshing. loading is painfully slow, but 800fps. Rendering is now the bottleneck, but not a priority. A simpler shader would get 10000+ fps
+64x64x64 world (8,589,934,592 voxels): 90fps
