@@ -483,59 +483,200 @@ struct Chunk {
 					break;
 				case 4: // left
 					// slices used are [y][z]
+					{
+						GLuint z = 0, z_copy = 0, y, y_copy, max_z;
+						GLbyte material;
+						bool end;
+						for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+							for (GLuint i = 0; i < CHUNK_SIZE; i++) {
+								visited[i].clear();
+							}
+							// iterate until lines are all processed
+							for (y = 0; y < CHUNK_SIZE; y++) {
+								// in every line every x has to be processed
+								for (z = visited[y].findNext(); z < CHUNK_SIZE; z = visited[y].findNext()) {
+									visited[y].setTrue(z);				// check for occlusion
+									if (voxels[y][z][x].isEmpty() || (x > 0 && voxelAt(y, z, x - 1))) {
+										// voxel is empty, not eligible for starter of greedy mesh, skip it
+										continue;
+									}
 
+									material = voxels[y][z][x].material_id;
+
+									// save the starting values
+									z_copy = z;
+									y_copy = y;
+
+
+									///////////////////////////////// do the actual greedy meshing
+
+									// on the first line, try do expand horizontally as much as possible
+									for (z = z + 1; z < CHUNK_SIZE; z++) {
+										if (visited[y][z] == true) break; // seems off, use findNext instead of x++????
+										visited[y].setTrue(z);
+
+										const Voxel &voxel = voxels[y][z][x];
+										if (voxel.isEmpty() || (x > 0 && voxelAt(y, z, x - 1))) { // we can mark it as visited, it will be useless
+											break;
+										}
+
+										if (voxel.material_id != material) { // we cannot mark it as visited now, it might be useful in the future
+											// pretend it was never visited
+											visited[y].setFalse(z);
+											break;
+										}
+									}
+
+									// since last loop breaks at the invalid x, correct max y is x - 1
+									max_z = z - 1;
+
+									// after getting that result, iterate to find max line where we can expand
+									end = false; // this flag is so the X loop can tell the Y loop it is finished (in case of error)
+									for (y = y + 1; !end && y < CHUNK_SIZE; y++) {
+										// every single voxel added needs to have a valid voxel above them, otherwise break
+										for (z = z_copy; z <= max_z; z++) {
+											if (visited[y][z]) break;
+
+
+											const Voxel &voxel = voxels[y][z][x];
+											if (voxel.isEmpty() || (x > 0 && voxelAt(y, z, x - 1))) { // we can mark it as visited, it will be useless
+												visited[y].setTrue(z);
+												end = true;
+												break;
+											}
+											// could be else and remove body from above
+											if (voxel.material_id != material) { // we cannot mark it as visited now, it might be useful in the future
+												end = true;
+												break;
+											}
+										}
+										// this is done before so the line is not filled in in the bitmap
+										if (end) {
+											break;
+										}
+										// reached the end of the line and everything is fine, need to mark everything we went through as visited
+										for (GLuint temp_z = z_copy; temp_z < z; temp_z++) {
+											visited[y].setTrue(temp_z);
+										}
+									}
+
+									// end results
+									// since last loop breaks at the invalid y, correct max y is y - 1
+									z = max_z;
+									y = y - 1;
+
+									// printf("creating quad from %u %u %u to %u %u\n", x_copy, y_copy, z, x, y);
+
+									quads[normal].emplace_back(glm::u8vec3(x, y_copy, z_copy),
+															   material,
+															   static_cast<GLfloat>(z - z_copy), static_cast<GLfloat>(y - y_copy));
+
+									// printf("quad position: %u %u %u len: %u %u\n", quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z, quads[normal].back().getLen().x, quads[normal].back().getLen().y);
+									// x = x_copy;
+									y = y_copy;
+								}
+							}
+						}
+					}
 					break;
 				case 5: // right
 					// slices used are [y][z]
-					break;
-			}
-
-			for (GLuint y = 0; y < CHUNK_SIZE; y++) {
-				for (GLuint z = 0; z < CHUNK_SIZE; z++) {
-					for (GLuint x = 0; x < CHUNK_SIZE; x++) {
-						const Voxel &voxel = voxels[y][z][x];
-						if (! voxel.isEmpty()) {
-							switch(normal) { // the compiler will probably unroll the entire loop, but later I might do it manually anyway. this can also be optimized to only check uneven voxel positions and build everything from them
-								case 0:
-									// if (y > 0 && voxelAt(y - 1, z, x)) {
-									// 	continue;
-									// }
-									// break;
-									continue;
-								case 1:
-									// if (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x)) {
-									// 	continue;
-									// }
-									// break;
-									continue;
-								case 2:
-									// if (z > 0 && voxelAt(y, z - 1, x)) {
-									// 	continue;
-									// }
-									// break;
-									continue;
-								case 3:
-									// if (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x)) {
-									// 	continue;
-									// }
-									// break;
-									continue;
-								case 4:
-									if (x > 0 && voxelAt(y, z, x - 1)) {
-										continue;
-									}
-									break;
-								case 5:
-									if (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1)) {
-										continue;
-									}
-									break;	
+					{
+						GLuint z = 0, z_copy = 0, y, y_copy, max_z;
+						GLbyte material;
+						bool end;
+						for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+							for (GLuint i = 0; i < CHUNK_SIZE; i++) {
+								visited[i].clear();
 							}
-							quads[normal].emplace_back(glm::u8vec3(x, y, z), voxel.material_id, 0.0f, 0.0f);
-							// printf("%u %u %u: %u %u %u\n", x, y, z, quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z);
+							// iterate until lines are all processed
+							for (y = 0; y < CHUNK_SIZE; y++) {
+								// in every line every x has to be processed
+								for (z = visited[y].findNext(); z < CHUNK_SIZE; z = visited[y].findNext()) {
+									visited[y].setTrue(z);				// check for occlusion
+									if (voxels[y][z][x].isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1))) {
+										// voxel is empty, not eligible for starter of greedy mesh, skip it
+										continue;
+									}
+
+									material = voxels[y][z][x].material_id;
+
+									// save the starting values
+									z_copy = z;
+									y_copy = y;
+
+
+									///////////////////////////////// do the actual greedy meshing
+
+									// on the first line, try do expand horizontally as much as possible
+									for (z = z + 1; z < CHUNK_SIZE; z++) {
+										if (visited[y][z] == true) break; // seems off, use findNext instead of x++????
+										visited[y].setTrue(z);
+
+										const Voxel &voxel = voxels[y][z][x];
+										if (voxel.isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1))) { // we can mark it as visited, it will be useless
+											break;
+										}
+
+										if (voxel.material_id != material) { // we cannot mark it as visited now, it might be useful in the future
+											// pretend it was never visited
+											visited[y].setFalse(z);
+											break;
+										}
+									}
+
+									// since last loop breaks at the invalid x, correct max y is x - 1
+									max_z = z - 1;
+
+									// after getting that result, iterate to find max line where we can expand
+									end = false; // this flag is so the X loop can tell the Y loop it is finished (in case of error)
+									for (y = y + 1; !end && y < CHUNK_SIZE; y++) {
+										// every single voxel added needs to have a valid voxel above them, otherwise break
+										for (z = z_copy; z <= max_z; z++) {
+											if (visited[y][z]) break;
+
+
+											const Voxel &voxel = voxels[y][z][x];
+											if (voxel.isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1))) { // we can mark it as visited, it will be useless
+												visited[y].setTrue(z);
+												end = true;
+												break;
+											}
+											// could be else and remove body from above
+											if (voxel.material_id != material) { // we cannot mark it as visited now, it might be useful in the future
+												end = true;
+												break;
+											}
+										}
+										// this is done before so the line is not filled in in the bitmap
+										if (end) {
+											break;
+										}
+										// reached the end of the line and everything is fine, need to mark everything we went through as visited
+										for (GLuint temp_z = z_copy; temp_z < z; temp_z++) {
+											visited[y].setTrue(temp_z);
+										}
+									}
+
+									// end results
+									// since last loop breaks at the invalid y, correct max y is y - 1
+									z = max_z;
+									y = y - 1;
+
+									// printf("creating quad from %u %u %u to %u %u\n", x_copy, y_copy, z, x, y);
+
+									quads[normal].emplace_back(glm::u8vec3(x, y_copy, z_copy),
+															   material,
+															   static_cast<GLfloat>(z - z_copy), static_cast<GLfloat>(y - y_copy));
+
+									// printf("quad position: %u %u %u len: %u %u\n", quads[normal].back().getPosition().x, quads[normal].back().getPosition().y, quads[normal].back().getPosition().z, quads[normal].back().getLen().x, quads[normal].back().getLen().y);
+									// x = x_copy;
+									y = y_copy;
+								}
+							}
 						}
 					}
-				}
+					break;
 			}
 		}
 	}
