@@ -37,7 +37,7 @@ struct Bitmap {
 
 	constexpr void setFalse(GLuint index) {
 		const uint8_t original = data[index / 8];
-		const uint8_t value_byte = 0xFF & (0 << (index % 8));
+		const uint8_t value_byte = 0xFF & (~ (1 << (index % 8))); // 0 << does not work properly for some reason, idk
 		data[index / 8] = original & value_byte;
 	}
 
