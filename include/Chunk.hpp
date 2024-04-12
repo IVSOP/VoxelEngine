@@ -65,6 +65,12 @@ struct Chunk {
 
 	constexpr void breakVoxelAt(GLubyte x, GLubyte y, GLubyte z) {
 		voxels[y][z][x] = Voxel(-1);
+		quadsHaveChanged = true;
+	}
+
+	constexpr void breakVoxelAt(const glm::u8vec3 &pos) {
+		voxels[pos.y][pos.z][pos.x] = Voxel(-1);
+		quadsHaveChanged = true;
 	}
 
 	std::vector<Quad> getQuads(GLuint normal) {

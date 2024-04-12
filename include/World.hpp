@@ -446,7 +446,7 @@ struct World {
 		const SelectedBlockInfo blockInfo = getBlockInfo(position);
 
 		Chunk &chunk = getChunkByID(blockInfo.chunkID);
-		chunk.insertVoxelAt(blockInfo.position, Voxel(-1));
+		chunk.breakVoxelAt(blockInfo.position);
 	}
 
 	void breakVoxelSphere(const SelectedBlockInfo &selectedInfo, GLfloat radius) {
