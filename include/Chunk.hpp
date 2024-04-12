@@ -22,8 +22,8 @@
 struct Voxel {
 	GLbyte material_id;
 
-	Voxel() : material_id(-1) {}
-	Voxel(GLbyte material_id) : material_id(material_id) {}
+	constexpr Voxel() : material_id(-1) {}
+	constexpr Voxel(GLbyte material_id) : material_id(material_id) {}
 
 	// this way I save memory, plus ints are aligned nicely
 	constexpr bool isEmpty() const {
@@ -63,6 +63,10 @@ struct Chunk {
 		return voxels[pos.y][pos.z][pos.x].isEmpty();
 	}
 
+	constexpr void breakVoxelAt(GLubyte x, GLubyte y, GLubyte z) {
+		voxels[y][z][x] = Voxel(-1);
+	}
+
 	std::vector<Quad> getQuads(GLuint normal) {
 		if (quadsHaveChanged) {
 			rebuildQuads();
@@ -79,7 +83,7 @@ struct Chunk {
 		return quads[normal].size();
 	}
 
-	constexpr bool voxelAt(GLuint y, GLuint z, GLuint x) {
+	constexpr bool voxelAt(GLuint x, GLuint y, GLuint z) {
 		return ! voxels[y][z][x].isEmpty();
 	}
 
@@ -104,7 +108,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (x = visited[z].findNext(); x < CHUNK_SIZE; x = visited[z].findNext()) {
 									visited[z].setTrue(x);				// check for occlusion
-									if (voxels[y][z][x].isEmpty() || (y > 0 && voxelAt(y - 1, z, x))) {
+									if (voxels[y][z][x].isEmpty() || (y > 0 && voxelAt(x, y - 1, z))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -124,7 +128,7 @@ struct Chunk {
 										visited[z].setTrue(x);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty() || (y > 0 && voxelAt(y - 1, z, x))) { // we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (y > 0 && voxelAt(x, y - 1, z))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -147,7 +151,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty() || (y > 0 && voxelAt(y - 1, z, x))) { // we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (y > 0 && voxelAt(x, y - 1, z))) { // we can mark it as visited, it will be useless
 												visited[z].setTrue(x);
 												end = true;
 												break;
@@ -202,7 +206,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (x = visited[z].findNext(); x < CHUNK_SIZE; x = visited[z].findNext()) {
 									visited[z].setTrue(x);				// check for occlusion
-									if (voxels[y][z][x].isEmpty() || (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x))) {
+									if (voxels[y][z][x].isEmpty() || (y < CHUNK_SIZE - 1 && voxelAt(x, y + 1, z))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -222,7 +226,7 @@ struct Chunk {
 										visited[z].setTrue(x);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty() || (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x))) { // we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (y < CHUNK_SIZE - 1 && voxelAt(x, y + 1, z))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -245,7 +249,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty() || (y < CHUNK_SIZE - 1 && voxelAt(y + 1, z, x))) { // we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (y < CHUNK_SIZE - 1 && voxelAt(x, y + 1, z))) { // we can mark it as visited, it will be useless
 												visited[z].setTrue(x);
 												end = true;
 												break;
@@ -299,7 +303,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (x = visited[y].findNext(); x < CHUNK_SIZE; x = visited[y].findNext()) {
 									visited[y].setTrue(x);
-									if (voxels[y][z][x].isEmpty() || (z > 0 && voxelAt(y, z - 1, x))) {
+									if (voxels[y][z][x].isEmpty() || (z > 0 && voxelAt(x, y, z - 1))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -319,7 +323,7 @@ struct Chunk {
 										visited[y].setTrue(x);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty() || (z > 0 && voxelAt(y, z - 1, x))) { // we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (z > 0 && voxelAt(x, y, z - 1))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -342,7 +346,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty() || (z > 0 && voxelAt(y, z - 1, x))) { // we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (z > 0 && voxelAt(x, y, z - 1))) { // we can mark it as visited, it will be useless
 												visited[y].setTrue(x);
 												end = true;
 												break;
@@ -397,7 +401,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (x = visited[y].findNext(); x < CHUNK_SIZE; x = visited[y].findNext()) {
 									visited[y].setTrue(x);				// check for occlusion
-									if (voxels[y][z][x].isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x))) {
+									if (voxels[y][z][x].isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(x, y, z + 1))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -417,7 +421,7 @@ struct Chunk {
 										visited[y].setTrue(x);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x))) { // we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(x, y, z + 1))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -440,7 +444,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(y, z + 1, x))) { // we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (z < CHUNK_SIZE - 1 && voxelAt(x, y, z + 1))) { // we can mark it as visited, it will be useless
 												visited[y].setTrue(x);
 												end = true;
 												break;
@@ -496,7 +500,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (z = visited[y].findNext(); z < CHUNK_SIZE; z = visited[y].findNext()) {
 									visited[y].setTrue(z);				// check for occlusion
-									if (voxels[y][z][x].isEmpty() || (x > 0 && voxelAt(y, z, x - 1))) {
+									if (voxels[y][z][x].isEmpty() || (x > 0 && voxelAt(x - 1, y, z))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -516,7 +520,7 @@ struct Chunk {
 										visited[y].setTrue(z);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty() || (x > 0 && voxelAt(y, z, x - 1))) { // we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (x > 0 && voxelAt(x - 1, y, z))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -539,7 +543,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty() || (x > 0 && voxelAt(y, z, x - 1))) { // we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (x > 0 && voxelAt(x - 1, y, z))) { // we can mark it as visited, it will be useless
 												visited[y].setTrue(z);
 												end = true;
 												break;
@@ -594,7 +598,7 @@ struct Chunk {
 								// in every line every x has to be processed
 								for (z = visited[y].findNext(); z < CHUNK_SIZE; z = visited[y].findNext()) {
 									visited[y].setTrue(z);				// check for occlusion
-									if (voxels[y][z][x].isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1))) {
+									if (voxels[y][z][x].isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(x + 1, y, z))) {
 										// voxel is empty, not eligible for starter of greedy mesh, skip it
 										continue;
 									}
@@ -614,7 +618,7 @@ struct Chunk {
 										visited[y].setTrue(z);
 
 										const Voxel &voxel = voxels[y][z][x];
-										if (voxel.isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1))) { // we can mark it as visited, it will be useless
+										if (voxel.isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(x + 1, y, z))) { // we can mark it as visited, it will be useless
 											break;
 										}
 
@@ -637,7 +641,7 @@ struct Chunk {
 
 
 											const Voxel &voxel = voxels[y][z][x];
-											if (voxel.isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(y, z, x + 1))) { // we can mark it as visited, it will be useless
+											if (voxel.isEmpty() || (x < CHUNK_SIZE - 1 && voxelAt(x + 1, y, z))) { // we can mark it as visited, it will be useless
 												visited[y].setTrue(z);
 												end = true;
 												break;
