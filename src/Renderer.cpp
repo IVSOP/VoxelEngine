@@ -374,10 +374,14 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 		// load UBO
 		Material materials[8];
 		materials[0] = {
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			// glm::vec3(2.99f, 0.72f, 0.0745f),
+			// glm::vec3(1.0f, 1.0f, 1.0f),
+			// glm::vec3(1.0f, 1.0f, 1.0f),
+			// glm::vec3(1.0f, 1.0f, 1.0f),
+			// // glm::vec3(2.99f, 0.72f, 0.0745f),
+			// glm::vec3(0.0f),
+			glm::vec3(0.9f, 0.9f, 0.85f),
+			glm::vec3(0.95f, 0.95f, 0.9f),
+			glm::vec3(0.9f, 0.9f, 0.85f),
 			glm::vec3(0.0f),
 			32.0f,
 			3
@@ -412,12 +416,15 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 
 		DirLight dirLights[MAX_LIGHTS];
 		dirLights[0] = {
-			// .direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
+			.direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
 			// .direction = glm::normalize(glm::vec3(1.0f, 0.1f, 0.0f)),
-			.direction = glm::normalize(glm::vec3(0.0f, 0.1f, 1.0f)),
-			.ambient = glm::vec3(0.2f, 0.2f, 0.2f),
-			.diffuse = glm::vec3(0.78f, 0.78f, 0.78f),
-			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
+			// .direction = glm::normalize(glm::vec3(0.0f, 0.1f, 1.0f)),
+			// .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
+			// .diffuse = glm::vec3(0.78f, 0.78f, 0.78f),
+			// .specular = glm::vec3(1.0f, 1.0f, 1.0f)
+			.ambient = glm::vec3(0.8f, 0.8f, 0.7f),
+			.diffuse = glm::vec3(1.0f, 0.96f, 0.86f),
+			.specular = glm::vec3(0.9f, 0.9f, 0.8f)
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, dirLightBuffer));

@@ -15,7 +15,7 @@ struct Quad {
 		return glm::uvec3(
 			(data >> 27) & 0x0000001F,
 			(data >> 22) & 0x0000001F,
-			(data >> 17)  & 0x0000001F
+			(data >> 17) & 0x0000001F
 		);
 	}
 

@@ -172,9 +172,12 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
     vec3 diffuse = light.diffuse * (diff * material.diffuse.xyz);
 
     // specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * (spec * material.specular.xyz);
+    // vec3 reflectDir = reflect(-lightDir, normal);
+    // float spec = pow(max(dot(viewDir, reflectDir), 0.000001), material.shininess); // apparently shininess is usually 0, but pow(0, 0) is undefined according to https://registry.khronos.org/OpenGL-Refpages/gl4/html/pow.xhtml, I spent hours on this fml
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.000001), material.shininess);
+	
+	vec3 specular = light.specular * (spec * material.specular.xyz);
 
     return (ambient + diffuse + specular);
 }
@@ -188,16 +191,18 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
     // diffuse shading
 	float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    // attenuation
+    // vec3 reflectDir = reflect(-lightDir, normal);
+    // float spec = pow(max(dot(viewDir, reflectDir), 0.000001), material.shininess); // apparently shininess is usually 0, but pow(0, 0) is undefined according to https://registry.khronos.org/OpenGL-Refpages/gl4/html/pow.xhtml, I spent hours on this fml
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.000001), material.shininess);
+	// attenuation
     float distance    = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + 
-  			   			 light.quadratic * (distance * distance));    
+  			    			  light.quadratic * (distance * distance));    
 
     return ((light.ambient * material.ambient.xyz)
-			+ (light.diffuse * diff * material.diffuse.xyz)
-			+ (light.specular * spec * material.specular.xyz)) * attenuation;
+			 + (light.diffuse * diff * material.diffuse.xyz)
+			 + (light.specular * spec * material.specular.xyz)) * attenuation;
 
     // vec3 ambient  = light.ambient  * vec3(texture(material.diffuse, TexCoords));
     // vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, TexCoords));
@@ -216,13 +221,15 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    // attenuation
+    // vec3 reflectDir = reflect(-lightDir, normal);
+    // float spec = pow(max(dot(viewDir, reflectDir), 0.000001), material.shininess); // apparently shininess is usually 0, but pow(0, 0) is undefined according to https://registry.khronos.org/OpenGL-Refpages/gl4/html/pow.xhtml, I spent hours on this fml
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.000001), material.shininess);
+	// attenuation
     float distance = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // spotlight intensity
-    float theta = dot(lightDir, normalize(-(mat3(u_View) * light.direction))); // same as dirlight, wtf?????????????????????????????????
+    float theta = dot(lightDir, normalize(-(mat3(u_View) * light.direction)));
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     
