@@ -54,6 +54,13 @@ void glfw_handleMouseKey_callback(GLFWwindow* window, int button, int action, in
 	client->pressMouseKey(window, button, action, mods);
 }
 
+void glfw_handleFileDrop_callback(GLFWwindow* window, int count, const char** paths) {
+	int i;
+	for (i = 0; i < count; i++) {
+		printf("got filename: %s\n", paths[i]);
+	}
+}
+
 WindowManager::WindowManager(int windowWidth, int windowHeight, Client *client)
 : windowFov(90.0), windowZNear(0.1), windowZFar(1000.0), windowWidth(windowWidth), windowHeight(windowHeight)
 {
@@ -92,6 +99,7 @@ WindowManager::WindowManager(int windowWidth, int windowHeight, Client *client)
     glfwSetKeyCallback(window, glfw_handleKey_callback);
     glfwSetCursorPosCallback(window, glfw_handleMouseMov_callback);
 	glfwSetMouseButtonCallback(window, glfw_handleMouseKey_callback);
+	glfwSetDropCallback(window, glfw_handleFileDrop_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 

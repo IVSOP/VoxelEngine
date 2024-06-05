@@ -23,6 +23,7 @@
 - [ ] test not using static for all buffers
 - [ ] create chunk position on the gpu instead of multiplying positions on the cpu
 - [ ] test 62^3 chunks, packing quads in groups of 4 to avoid padding (5B quads)
+- [ ] store chunks using palette compression https://voxel.wiki/wiki/palette-compression/
 
 ## Fix
 - [ ] Breaking voxels when world size is not 16x16x16 or 32x32x32

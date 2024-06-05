@@ -36,6 +36,8 @@ public:
 	void pressMouseKey(GLFWwindow* window, int button, int action, int mods);
 
 	void mainloop();
+	void saveWorldTo(const std::string &filepath) const;
+	void loadWorldFrom(const std::string &filepath);
 };
 
 #endif

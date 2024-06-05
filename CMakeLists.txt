@@ -50,6 +50,7 @@ else (WIN32)
 	find_package(GLEW REQUIRED)
 endif (WIN32)
 
+find_package(ZLIB)
 
 add_subdirectory(external/glm)
 include_directories(external/glm)
@@ -70,6 +71,7 @@ add_executable(VoxelEngine
 		src/TextureArray.cpp
 		src/Client.cpp
 		src/Player.cpp
+		src/World.cpp
 		src/Renderer.cpp
 		src/WindowManager.cpp
 		src/InputHandler.cpp
@@ -98,12 +100,14 @@ if (WIN32) # windows glfw, glew, glut, opengl mas de maneira manhosa
 		${OPENGL_LIBRARIES} 
 		${TOOLKITS_FOLDER}/glut/glut32.lib 
 		${TOOLKITS_FOLDER}/glew/glew32.lib
+		ZLIB::ZLIB
 	)
 else (WIN32)
 	target_link_libraries(VoxelEngine
 			glfw
 			GLEW::GLEW
 			OpenGL::GL
+			ZLIB::ZLIB
 	)
 endif (WIN32)
 # ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa

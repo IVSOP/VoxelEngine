@@ -45,7 +45,7 @@ static_assert(sizeof(ChunkInfo) == 1 * sizeof(glm::vec4), "Error: ChunkInfo has 
 struct Chunk {
 	// 3D array, [y][z][x] (height, depth, width). this can easily be moved around to test what gets better cache performance
 	Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-	bool quadsHaveChanged = false;
+	bool quadsHaveChanged = true;
 	// [i] corresponds to normal == i
 	std::vector<Quad> quads[6]; // I suspect that most chunks will have empty space so I use a vector. idk how bad this is, memory will be extremely sparse. maybe using a fixed size array here will be better, need to test
 	Bitmap<CHUNK_SIZE> visited[CHUNK_SIZE]; //  CAN BE USED AS [y][x] // visited[y] has all info on that row (values vary along x). basically a bitmap for every single row (for easier math)
