@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "common.hpp"
 
 // https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/camera.h
 

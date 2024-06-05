@@ -61,10 +61,12 @@ public:
 	bool inMenu; // faz o rato nao virar a camera
 
 
-	// TEMPORARY
-	GLFWcursorposfun handleMouseMov;
+	// Get this out of here asap
+	GLFWcursorposfun handleMouseMov = nullptr;
+	GLFWmousebuttonfun handleMouseKey = nullptr;
 
-	InputHandler();
+	InputHandler() = delete;
+	InputHandler(GLFWcursorposfun mouse_mov_callback, GLFWmousebuttonfun mouse_keypress_callback);
 	~InputHandler() = default;
 
 	void pressKey(GLFWwindow *window, int key, int scancode, int action, int mods);

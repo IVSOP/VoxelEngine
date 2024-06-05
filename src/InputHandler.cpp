@@ -1,10 +1,7 @@
 #include "InputHandler.hpp"
 
-// defined in Engine.cpp. yes, this is cursed
-void handleMouseKey(GLFWwindow* window, int button, int action, int mods);
-
-InputHandler::InputHandler()
-: keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), curX(0.0f), curY(0.0f), lastX(0.0f), lastY(0.0f), inMenu(false)
+InputHandler::InputHandler(GLFWcursorposfun mouse_mov_callback, GLFWmousebuttonfun mouse_keypress_callback)
+: keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), curX(0.0f), curY(0.0f), lastX(0.0f), lastY(0.0f), inMenu(false), handleMouseMov(mouse_mov_callback), handleMouseKey(mouse_keypress_callback)
 {
 
 }

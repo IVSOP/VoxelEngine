@@ -68,8 +68,10 @@ add_executable(VoxelEngine
 		src/GLErrors.cpp
 		src/Shader.cpp
 		src/TextureArray.cpp
-		src/Engine.cpp
+		src/Client.cpp
+		src/Player.cpp
 		src/Renderer.cpp
+		src/WindowManager.cpp
 		src/InputHandler.cpp
 		src/Material.cpp
 		src/windows/windows_unistd.cpp

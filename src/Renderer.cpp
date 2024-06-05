@@ -416,9 +416,9 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 
 		DirLight dirLights[MAX_LIGHTS];
 		dirLights[0] = {
-			.direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
+			// .direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
 			// .direction = glm::normalize(glm::vec3(1.0f, 0.1f, 0.0f)),
-			// .direction = glm::normalize(glm::vec3(0.0f, 0.1f, 1.0f)),
+			.direction = glm::normalize(glm::vec3(0.0f, 0.1f, 1.0f)),
 			// .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
 			// .diffuse = glm::vec3(0.78f, 0.78f, 0.78f),
 			// .specular = glm::vec3(1.0f, 1.0f, 1.0f)

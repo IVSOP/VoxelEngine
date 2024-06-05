@@ -8,7 +8,7 @@
 #include "Quad.hpp"
 #include <vector>
 #include "QuadContainer.hpp"
-#include "Bitmap.h"
+#include "Bitmap.hpp"
 
 // normal {
 // 	0 - y (bottom)

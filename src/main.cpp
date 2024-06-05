@@ -1,8 +1,8 @@
-#include "Engine.hpp"
+#include "Client.hpp"
 
 int main(int argc, char **argv) {
-	Engine engine = Engine();
-	engine.loop();
+	Client client = Client();
+	client.mainloop();
 	return 0;
 }
 
