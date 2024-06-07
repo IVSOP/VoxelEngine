@@ -253,6 +253,7 @@ SelectedBlockInfo World::getSelectedBlock(const glm::vec3 &position, const glm::
 }
 
 void World::saveTo(std::ofstream &file) {
+	uLong total = 0; // acumulator for determining compression ratio
 	uLong bound = compressBound(WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
 	uLong len;
 	// in order to not be ridiculous, will compress data in chunks
@@ -273,9 +274,15 @@ void World::saveTo(std::ofstream &file) {
 				// this is probably really very bad right? idk the best way to write a single int. ill assume the buffering will amortize the slowness of this
 				file.write(reinterpret_cast<char *>(&size), sizeof(size));
 				file.write(reinterpret_cast<char *>(buff), sizeof(Bytef) * len);
+
+				total += len;
 			}
 		}
 	}
+
+	printf("World compression ratio: %lf (from %ld to %ld)\n", 
+		static_cast<double>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z) / static_cast<double>(total),
+		CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * WORLD_SIZE_X * WORLD_SIZE_Y * WORLD_SIZE_Z, total);
 
 	delete[] buff;
 }

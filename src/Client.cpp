@@ -11,27 +11,27 @@ Client::Client()
 	resizeViewport(1920, 1080); // these too
 
 
-	// Chunk chunk;
-	// Voxel voxel = Voxel(0);
-	// for (GLuint y = 0; y < CHUNK_SIZE; y++) {
-	// 	// if (y == 15) continue;
-	// 	for (GLuint z = 0; z < CHUNK_SIZE; z++) {
-	// 		for (GLuint x = 0; x < CHUNK_SIZE; x++) {
-	// 			// if (x == 15) continue;
-	// 			chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
-	// 		}
-	// 	}
-	// }
+	Chunk chunk;
+	Voxel voxel = Voxel(0);
+	for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+		// if (y == 15) continue;
+		for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+			for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+				// if (x == 15) continue;
+				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
+			}
+		}
+	}
 
-	// for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
-	// 	for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
-	// 		for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
-	// 			// world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
-	// 			// world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
-	// 			world.get()->copyChunkTo(chunk, glm::uvec3(x, y, z));
-	// 		}
-	// 	}
-	// }
+	for (GLuint x = 0; x < WORLD_SIZE_X; x++) {
+		for (GLuint y = 0; y < WORLD_SIZE_Y; y++) {
+			for (GLuint z = 0; z < WORLD_SIZE_Z; z++) {
+				// world.get()->copyChunkTo(chunk, glm::uvec3(x, 0, z));
+				// world.get()->copyChunkTo(chunk, glm::uvec3(x, 15, z));
+				world.get()->copyChunkTo(chunk, glm::uvec3(x, y, z));
+			}
+		}
+	}
 }
 
 void Client::resizeViewport(int windowWidth, int windowHeight) {
@@ -110,6 +110,7 @@ void Client::mainloop() {
 void Client::saveWorldTo(const std::string &filepath) const {
 	std::ofstream file(filepath, std::ios::binary);
 
+	player.get()->saveTo(file);
 	world.get()->saveTo(file);
 
 	file.flush();
@@ -119,6 +120,8 @@ void Client::saveWorldTo(const std::string &filepath) const {
 void Client::loadWorldFrom(const std::string &filepath) {
 	std::ifstream file(filepath, std::ios::binary);
 
-	// got lazy, maybe it is faster to iterate and change pre-existing world
+	// got lazy, maybe it is faster to iterate and change pre-existing world???
+	player = std::make_unique<Player>(file);
 	world = std::make_unique<World>(file);
+	// inputHandler = InputHandler(glfw_handleMouseMov_callback, glfw_handleMouseKey_callback);
 }

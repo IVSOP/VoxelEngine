@@ -71,6 +71,32 @@ public:
 		// does nothing, should not be used
 	}
 
+	Camera(std::istream &file) {
+		file.read(reinterpret_cast<char *>(&Position.x), sizeof(Position));
+		file.read(reinterpret_cast<char *>(&WorldUp.x), sizeof(WorldUp));
+		
+		file.read(reinterpret_cast<char *>(&Yaw), sizeof(Yaw));
+		file.read(reinterpret_cast<char *>(&Pitch), sizeof(Pitch));
+
+		file.read(reinterpret_cast<char *>(&MovementSpeed), sizeof(MovementSpeed));
+		file.read(reinterpret_cast<char *>(&MouseSensitivity), sizeof(MouseSensitivity));
+		file.read(reinterpret_cast<char *>(&Zoom), sizeof(Zoom));
+
+		updateCameraVectors();
+	}
+
+	void saveTo(std::ofstream &file) const {
+		file.write(reinterpret_cast<const char *>(&Position.x), sizeof(Position));
+		file.write(reinterpret_cast<const char *>(&WorldUp.x), sizeof(WorldUp));
+		
+		file.write(reinterpret_cast<const char *>(&Yaw), sizeof(Yaw));
+		file.write(reinterpret_cast<const char *>(&Pitch), sizeof(Pitch));
+
+		file.write(reinterpret_cast<const char *>(&MovementSpeed), sizeof(MovementSpeed));
+		file.write(reinterpret_cast<const char *>(&MouseSensitivity), sizeof(MouseSensitivity));
+		file.write(reinterpret_cast<const char *>(&Zoom), sizeof(Zoom));
+	}
+
 	Camera(glm::vec3 position, glm::vec3 lookAtPoint, glm::vec3 up)
 	: MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
