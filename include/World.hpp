@@ -45,7 +45,7 @@ struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	std::vector<ChunkInfo> info; // [WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
 	std::vector<IndirectData> indirect; // avoid the first alocations, try different numbers
-	
+
 	QuadContainer<Quad> quads; // so I dont have to constantly alloc and free
 
 	constexpr Chunk &get(const glm::uvec3 &position) {

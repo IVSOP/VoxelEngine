@@ -1,6 +1,8 @@
 #ifndef QUAD_H
 #define QUAD_H
 
+#define NUM_MATERIALS (1 << 7)
+
 // this is a quad that is processed and ready to go to the gpu in whatever weird format it expects
 // you can think of this as Vertex, but I found it confusing since I am using instances (basically I rather think about drawing instances rather than drawing vertices)
 struct Quad {
