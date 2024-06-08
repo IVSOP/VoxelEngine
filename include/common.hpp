@@ -24,14 +24,15 @@ struct SelectedBlockInfo {
 	GLint materialID;
 	GLuint chunkID;
 	GLubyte normal;
+	bool _isEmpty;
 	glm::u8vec3 position; // relative to chunk
 
-	SelectedBlockInfo(GLint materialID, GLuint chunkID, GLubyte normal, const glm::u8vec3 &position)
-	: materialID(materialID), chunkID(chunkID), normal(normal), position(position) {}
+	SelectedBlockInfo(GLint materialID, GLuint chunkID, GLubyte normal, bool isEmpty, const glm::u8vec3 &position)
+	: materialID(materialID), chunkID(chunkID), normal(normal), _isEmpty(isEmpty), position(position) {}
 
 	SelectedBlockInfo() = default;
 
-	constexpr bool isEmpty() const { return materialID < 0; }
+	constexpr bool isEmpty() const { return _isEmpty; }
 };
 
 // same

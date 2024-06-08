@@ -133,6 +133,7 @@ SelectedBlockInfo World::getBlockInfo(const glm::ivec3 &position) {
 
 	ret.position = pos;
 	ret.materialID = chunk->getVoxelAt(pos).material_id;
+	ret._isEmpty = chunk->isEmptyAt(pos);
 
 	return ret;
 }
@@ -161,7 +162,7 @@ SelectedBlockInfo World::getSelectedBlock(const glm::vec3 &position, const glm::
 
 	if (dx == 0 && dy == 0 && dz == 0) {
 		// throw std::range_error("Raycast in zero direction!");
-		return SelectedBlockInfo(-1, 0, 0, {});
+		return SelectedBlockInfo(-1, 0, 0, true, {});
 	}
 
 	// will optimize this later
@@ -249,7 +250,7 @@ SelectedBlockInfo World::getSelectedBlock(const glm::vec3 &position, const glm::
 
 	}
 	// nothing found within range
-	return SelectedBlockInfo(-1, 0, 0, {});
+	return SelectedBlockInfo(-1, 0, 0, false, {});
 }
 
 void World::saveTo(std::ofstream &file) {

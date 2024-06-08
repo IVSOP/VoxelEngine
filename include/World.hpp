@@ -198,7 +198,7 @@ struct World {
 	// SelectedBlockInfo is what the caller will have, and it contains all the information needed to do this
 	void breakVoxel(const SelectedBlockInfo &selectedInfo) {
 		Chunk &chunk = getChunkByID(selectedInfo.chunkID);
-		chunk.insertVoxelAt(selectedInfo.position, Voxel(-1));
+		chunk.breakVoxelAt(selectedInfo.position);
 	}
 
 	void breakVoxel(const glm::ivec3 position) {
