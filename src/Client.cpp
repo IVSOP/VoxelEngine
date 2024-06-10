@@ -2,7 +2,7 @@
 
 Client::Client()
 : windowManager(std::make_unique<WindowManager>(1920, 1080, this)),
-  player(std::make_unique<Player>(glm::vec3(64, 64, -264), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0))),
+  player(std::make_unique<Player>(glm::vec3(64, 64, 264), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0))),
   world(std::make_unique<World>()),
   renderer(std::make_unique<Renderer>(1920, 1080)), // get these from window manager???
   inputHandler(glfw_handleMouseMov_callback, glfw_handleMouseKey_callback) // funcs from window manager

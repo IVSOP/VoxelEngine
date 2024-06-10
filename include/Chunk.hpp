@@ -461,9 +461,9 @@ struct Chunk {
 										break;
 									}
 
-									if (z != end_z) {
-										break;
-									}
+								}
+								if (z != end_z) {
+									break;
 								}
 
 								// commit changes to the mask
