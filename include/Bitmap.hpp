@@ -24,6 +24,7 @@ struct Bitmap {
 	constexpr void operator&=(const GLuint number);
 	constexpr void operator&=(const Bitmap<size> &other);
 	constexpr void operator|=(const GLuint number);
+	constexpr void operator|=(const Bitmap<size> &other);
 	constexpr void operator<<=(const GLuint number);
 	constexpr void operator>>=(const GLuint number);
 	constexpr bool operator!=(const GLuint number) const;
@@ -119,6 +120,10 @@ struct Bitmap<32> {
 
 	constexpr void operator|=(const GLuint number) {
 		data |= number;
+	}
+
+	constexpr void operator|=(const Bitmap<32> &other) {
+		data |= other.data;
 	}
 
 	constexpr void operator<<=(const GLuint number) {

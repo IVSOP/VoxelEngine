@@ -122,7 +122,7 @@ struct Chunk {
 		auto start = std::chrono::high_resolution_clock::now();
 
 		// [face][y][z][x]
-		std::array<std::array<std::array<Bitmap<CHUNK_SIZE>, CHUNK_SIZE>, CHUNK_SIZE>, 6> faceMasks;
+		std::array<std::array<std::array<Bitmap<CHUNK_SIZE>, CHUNK_SIZE>, CHUNK_SIZE>, 6 + 2> faceMasks;
 
 		Bitmap<CHUNK_SIZE> currOpaqueMask;
 
@@ -157,8 +157,9 @@ struct Chunk {
 				}
 
 				// x and -x uses bitshifts since this is the same direction as the mask itself
-				faceMasks[4][y][z] = currOpaqueMask & ~(opaqueMask[y][z] >> 1);
-				faceMasks[5][y][z] = currOpaqueMask & ~(opaqueMask[y][z] >> 1);
+				// will be transposed later into [5] and [6] so placed here for now
+				faceMasks[6][y][z] = currOpaqueMask & ~(opaqueMask[y][z] << 1);
+				faceMasks[7][y][z] = currOpaqueMask & ~(opaqueMask[y][z] >> 1);
 			}
 		}
 
@@ -172,6 +173,7 @@ struct Chunk {
 			Bitmap<32> mask;
 			GLuint x;
 			for (uint8_t face = 0; face < 2; face++) {
+				quads[face].clear();
 				for (GLuint y = 0; y < CHUNK_SIZE; y++) {
 					for (GLuint z = 0; z < CHUNK_SIZE;) { // do not do z++ unless all bits are set to 0 (the first if below this)
 						mask = faceMasks[face][y][z];
@@ -234,12 +236,16 @@ struct Chunk {
 							// faceMasks[face][y][end_z].print();
 							if ((mask & faceMasks[face][y][end_z]) == mask) {
 								// the voxels are in the right place, just need to check materials
-								// for (x = start_x; x < end_x; x++) {
-								// 	if (voxels[y][end_z][x].material_id != material) {
-								// 		end_z--; // last valid z was before current one
-								// 		break;
-								// 	}
-								// }
+								for (x = 1; x < end_x; x++) {
+									if (voxels[y][end_z][x + start_x].material_id != material) {
+										break;
+									}
+								}
+								if (x != end_x) { // previous loop failed, materials are not all the same
+									// last valid z was z-1
+									// but it is already expected for end_z to be 1 greater, so do nothing
+									break;
+								}
 
 								// commit changes to the mask
 								faceMasks[face][y][end_z] &= ~mask;
@@ -251,7 +257,7 @@ struct Chunk {
 						}
 						// -1 since they are guaranteed to never be 0. this way we can save one bit
 						len_z = end_z - z - 1;
-						len_x = end_x - start_x - 1;
+						len_x = end_x - 1;
 
 						// printf("x:%u y:%u z:%u len_x:%u len_z:%u start_x:%u end_x:%u\n", start_x, y, z, len_x, len_z, start_x, end_x);
 						// printf("x: from %u to %u\nz: from %u to %u\n", start_x, start_x + len_x, z, z + len_z);
@@ -272,6 +278,7 @@ struct Chunk {
 			GLuint x;
 			GLbyte material;
 			for (uint8_t face = 2; face < 4; face++) {
+				quads[face].clear();
 				for (GLuint z = 0; z < CHUNK_SIZE; z++) {
 					for (GLuint y = 0; y < CHUNK_SIZE;) { // do not do y++ unless all bits are set to 0 (the first if below this)
 						mask = faceMasks[face][z][y];
@@ -317,9 +324,12 @@ struct Chunk {
 							// use bit operations to check if there are voxels in the necessary positions
 							if ((mask & faceMasks[face][z][end_y]) == mask) {
 								// the voxels are in the right place, just need to check materials
-								for (x = start_x; x < end_x; x++) {
-									if (voxels[end_y][z][x].material_id != material) {
-										end_y--; // last valid z was before current one
+								for (x = 1; x < end_x; x++) {
+									if (voxels[end_y][z][x + start_x].material_id != material) {
+										break;
+									}
+
+									if (x != end_x) {
 										break;
 									}
 								}
@@ -332,7 +342,7 @@ struct Chunk {
 						}
 						// -1 since they are guaranteed to never be 0. this way we can save one bit
 						len_y = end_y - y - 1;
-						len_x = end_x - start_x - 1;
+						len_x = end_x - 1;
 
 						quads[face].emplace_back(glm::u8vec3(start_x, y, z),
 										voxels[0][0][0].material_id,
@@ -342,7 +352,143 @@ struct Chunk {
 			}
 		}
 
+		// for x axis, meshing will be a mess and I won't be able to use the same algorithm
+		// goal: masks[y][x] has the bits on the Z axis
+		// TODO optimize this
+		{
+			std::array<Bitmap<CHUNK_SIZE>, 2> masks;
+			Bitmap<CHUNK_SIZE> clear_mask = 0x00000001; // mask to clear all but the last bit
+			for (GLuint y = 0; y < CHUNK_SIZE; y++) {
+				// x to be filled in final masks
+				for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+					// reset for safety to not screw up the | below, but rewrite this in the future
+					masks[0].clear();
+					masks[1].clear();
+
+					// need to consult mask [y][z][x] to get the bit
+					for (GLuint z = 0; z < CHUNK_SIZE; z++) {
+						// this is the logic of what I need to do here:
+						// if (faceMasks[6][y][z][x] == true) {
+						// 	masks[0].setBit(z);
+						// }
+						// if (faceMasks[7][y][z][x] == true) {
+						// 	masks[1].setBit(z);
+						// }
+						// first shift is to end with either 0x0 or 0x1
+						// & is to clear all except for that bit
+						// next shift moves it to position z on the final mask
+						masks[0] |= (((faceMasks[6][y][z] >> x) & clear_mask) << z);
+						masks[1] |= (((faceMasks[7][y][z] >> x) & clear_mask) << z);
+					}
+
+					faceMasks[4][y][x] = masks[0];
+					faceMasks[5][y][x] = masks[1];
+				}
+			}
+		}
+
+
+		// -/+ x
+		{
+			GLuint start_z, end_z;
+			GLuint len_y, len_z;
+			Bitmap<32> mask;
+			GLuint z;
+			GLbyte material;
+			for (uint8_t face = 4; face < 6; face++) {
+				quads[face].clear();
+				for (GLuint x = 0; x < CHUNK_SIZE; x++) {
+					for (GLuint y = 0; y < CHUNK_SIZE;) { // do not do y++ unless all bits are set to 0 (the first if below this)
+						mask = faceMasks[face][y][x];
+						start_z = mask.trailing_zeroes();
+
+
+
+						// all bits are at 0, nothing to do at this z level
+						// this is cursed
+						if (start_z == CHUNK_SIZE) {
+							y++;
+							// puts("all empty");
+							continue;
+						}
+
+						// printf("initial mask:                  ");
+						// mask.print();
+
+						material = voxels[y][start_z][x].material_id;
+
+						mask >>= start_z;
+						// printf("after shift right:             ");
+						// mask.print();
+
+						end_z = mask.trailing_ones();
+						// printf("end_z: %u\n", end_z);
+
+						for (z = 1; z < end_z; z++) {
+							if (voxels[y][z + start_z][x].material_id != material) {
+								break;
+							}
+						}
+						end_z = z;
+
+						// printf("after material check, end_z is %u\n", end_z);
+
+						mask <<= (CHUNK_SIZE - end_z);
+						// printf("after shift left:              ");
+						// mask.print();
+						mask >>= (CHUNK_SIZE - (end_z + start_z));
+						// printf("after shift right again:       ");
+						// mask.print();
+
+						len_z = start_z - end_z;
+
+						// here, mask contains 1 for the voxels we need to check
+						// check if all their materias match, if not reduce end_x until they do
+						// for now will assume yes
+
+						// commit changes to original mask, zero out the bits in use
+						faceMasks[face][y][x] &= ~mask;
+
+
+						// loop to go over and check next Z values
+						GLuint end_y = y + 1;
+						for (; end_y < CHUNK_SIZE; end_y++) {
+							// use bit operations to check if there are voxels in the necessary positions
+							if ((mask & faceMasks[face][end_y][x]) == mask) {
+								// the voxels are in the right place, just need to check materials
+								for (z = 1; z < end_z; z++) {
+									if (voxels[end_y][z + start_z][x].material_id != material) {
+										break;
+									}
+
+									if (z != end_z) {
+										break;
+									}
+								}
+
+								// commit changes to the mask
+								faceMasks[face][end_y][x] &= ~mask;
+							} else {
+								break;
+							}
+						}
+						// -1 since they are guaranteed to never be 0. this way we can save one bit
+						len_y = end_y - y - 1;
+						len_z = end_z - 1;
+
+						// printf("x: %u\nz: from %u to %u\ny: from %u to %u\nstart_z: %u end_z: %u\n\n", x, start_z, start_z + len_z, y, y + len_y, start_z, end_z);
+
+						quads[face].emplace_back(glm::u8vec3(x, y, start_z),
+										voxels[0][0][0].material_id,
+										static_cast<GLfloat>(len_z), static_cast<GLfloat>(len_y));
+					}
+				}
+			}
+		}
+
 		// exit(0);
+
+		// this is a changed version of the greedy mesher that is on github
 		// for (uint8_t face = 0; face < 6; face++) {
 		// 	int axis = face / 2;
 
