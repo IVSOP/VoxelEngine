@@ -14,10 +14,10 @@ Client::Client()
 	Chunk chunk;
 	Voxel voxel = Voxel(0);
 	for (GLuint y = 0; y < CHUNK_SIZE; y++) {
-		// if (y == 15) continue;
+		if (y == 15) continue;
 		for (GLuint z = 0; z < CHUNK_SIZE; z++) {
 			for (GLuint x = 0; x < CHUNK_SIZE; x++) {
-				// if (x == 15) continue;
+				if (x == 5) continue;
 				chunk.insertVoxelAt(glm::uvec3(x, y, z), voxel);
 			}
 		}

@@ -18,7 +18,7 @@ uniform samplerBuffer u_ChunkInfoTBO;
 out VS_OUT {
 	vec2 v_TexCoord;
 	flat int v_MaterialID; // flat since it is always the same between all vertices. int because reasons, should be an uint
-	vec3 v_Normal; // in view space. will make the normal vector here, but in the future might just pass the normal from 0 - 6
+	flat vec3 v_Normal; // in view space. will make the normal vector here, but in the future might just pass the normal from 0 - 6
 	vec3 v_FragPos; // in view space
 } vs_out;
 
