@@ -200,14 +200,14 @@ struct Chunk {
 
 						// here we already have start and end, need to check if all materials are the same
 						// go in a loop from start to end. when finished or material is different, change end
-						// start_x will correspond to an index. however, end_x will be index + 1 since it is actually the number of 1s
-						// so there is no need to do x <= end, just do x < end
-						for (x = start_x + 1; x < end_x; x++) {
-							if (voxels[y][z][x].material_id != material) {
-								end_x = x - 1; // last valid position was before current x
+						for (x = 1; x < end_x; x++) {
+							if (voxels[y][z][x + start_x].material_id != material) {
+								break;
 							}
 						}
-
+						// here, [x] contains the last valid index
+						// end is always index + 1
+						end_x = x;
 
 						// two shifts to cleanup the mask so only bits set to 1 are the ones we are considering
 						mask <<= (CHUNK_SIZE - end_x);
@@ -234,12 +234,12 @@ struct Chunk {
 							// faceMasks[face][y][end_z].print();
 							if ((mask & faceMasks[face][y][end_z]) == mask) {
 								// the voxels are in the right place, just need to check materials
-								for (x = start_x; x < end_x; x++) {
-									if (voxels[y][end_z][x].material_id != material) {
-										end_z--; // last valid z was before current one
-										break;
-									}
-								}
+								// for (x = start_x; x < end_x; x++) {
+								// 	if (voxels[y][end_z][x].material_id != material) {
+								// 		end_z--; // last valid z was before current one
+								// 		break;
+								// 	}
+								// }
 
 								// commit changes to the mask
 								faceMasks[face][y][end_z] &= ~mask;
@@ -290,11 +290,12 @@ struct Chunk {
 
 						end_x = mask.trailing_ones();
 
-						for (x = start_x + 1; x < end_x; x++) {
-							if (voxels[y][z][x].material_id != material) {
-								end_x = x - 1;
+						for (x = 1; x < end_x; x++) {
+							if (voxels[y][z][x + start_x].material_id != material) {
+								break;
 							}
 						}
+						end_x = x;
 
 						mask <<= (CHUNK_SIZE - end_x);
 						mask >>= (CHUNK_SIZE - (end_x + start_x));
