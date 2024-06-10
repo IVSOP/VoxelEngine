@@ -303,6 +303,7 @@ void Renderer::loadTextures() {
 	tex->addTexture("textures/black.png"); // 1
 	tex->addTexture("textures/white.png"); // 2
 	tex->addTexture("textures/birch_planks.png"); // 3
+	tex->addTexture("textures/redstone_block.png"); // 4
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
 
@@ -385,6 +386,20 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 			glm::vec3(0.0f),
 			32.0f,
 			3
+		};
+
+		materials[1] = {
+			// glm::vec3(1.0f, 1.0f, 1.0f),
+			// glm::vec3(1.0f, 1.0f, 1.0f),
+			// glm::vec3(1.0f, 1.0f, 1.0f),
+			// // glm::vec3(2.99f, 0.72f, 0.0745f),
+			// glm::vec3(0.0f),
+			glm::vec3(0.9f, 0.9f, 0.85f),
+			glm::vec3(0.95f, 0.95f, 0.9f),
+			glm::vec3(0.9f, 0.9f, 0.85f),
+			glm::vec3(0.0f),
+			32.0f,
+			4
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));

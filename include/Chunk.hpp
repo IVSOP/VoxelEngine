@@ -263,7 +263,7 @@ struct Chunk {
 						// printf("x: from %u to %u\nz: from %u to %u\n", start_x, start_x + len_x, z, z + len_z);
 
 						quads[face].emplace_back(glm::u8vec3(start_x, y, z),
-										voxels[0][0][0].material_id,
+										material,
 										static_cast<GLfloat>(len_x), static_cast<GLfloat>(len_z));
 					}
 				}
@@ -329,9 +329,9 @@ struct Chunk {
 										break;
 									}
 
-									if (x != end_x) {
-										break;
-									}
+								}
+								if (x != end_x) {
+									break;
 								}
 
 								// commit changes to the mask
@@ -345,7 +345,7 @@ struct Chunk {
 						len_x = end_x - 1;
 
 						quads[face].emplace_back(glm::u8vec3(start_x, y, z),
-										voxels[0][0][0].material_id,
+										material,
 										static_cast<GLfloat>(len_x), static_cast<GLfloat>(len_y));
 					}
 				}
@@ -479,7 +479,7 @@ struct Chunk {
 						// printf("x: %u\nz: from %u to %u\ny: from %u to %u\nstart_z: %u end_z: %u\n\n", x, start_z, start_z + len_z, y, y + len_y, start_z, end_z);
 
 						quads[face].emplace_back(glm::u8vec3(x, y, start_z),
-										voxels[0][0][0].material_id,
+										material,
 										static_cast<GLfloat>(len_z), static_cast<GLfloat>(len_y));
 					}
 				}
