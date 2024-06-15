@@ -19,6 +19,14 @@
 //     Vertex() = default;
 // };
 
+struct HighlightInstance {
+	glm::vec3 coords;
+	GLint normal;
+
+	HighlightInstance(const glm::vec3 &coords, GLuint normal)
+	: coords(coords), normal(normal) {}
+};
+
 struct InstanceVertex {
 	glm::vec3 coords;
 	// glm::vec2 tex_coords;

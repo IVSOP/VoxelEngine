@@ -151,6 +151,47 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 		GLCall(glVertexAttribDivisor(data_layout, 1)); // values are per instance
 	}
 
+	//////////////////////////// LOADING VAO FOR HIGHLIGHT ////////////////////////////
+	GLCall(glGenVertexArrays(1, &this->VAO_highlight));
+	GLCall(glBindVertexArray(this->VAO_highlight));
+
+	//////////////////////////// LOADING VBOS FOR HIGHLIGHT ////////////////////////////////
+
+	GLCall(glGenBuffers(1, &this->base_highlight_buffer));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->base_highlight_buffer));
+	{
+		const InstanceVertex baseVertices[] = {
+			// position            // tex coords
+			glm::vec3(0.0f, 0.0f, 0.0f),//  0.0f, 0.0f},
+			glm::vec3(1.0f, 0.0f, 0.0f),//  1.0f, 0.0f},
+			glm::vec3(1.0f, 1.0f, 0.0f),//  1.0f, 1.0f},
+			glm::vec3(1.0f, 1.0f, 0.0f),//  1.0f, 1.0f},
+			glm::vec3(0.0f, 1.0f, 0.0f),//  0.0f, 1.0f},
+			glm::vec3(0.0f, 0.0f, 0.0f) //  0.0f, 0.0f}
+		};
+		GLuint vertex_position_layout = 0;
+		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceVertex), (const void *)offsetof(InstanceVertex, coords)));
+		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // these valuse are constant every vertex
+
+		GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(baseVertices), baseVertices, GL_STATIC_DRAW));
+	}
+
+	GLCall(glGenBuffers(1, &this->VBO_highlight));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->VBO_highlight));
+	{
+		GLuint vertex_position_layout = 1;
+		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(HighlightInstance), (const void *)offsetof(HighlightInstance, coords)));
+		GLCall(glVertexAttribDivisor(vertex_position_layout, 1)); // values are per instance
+
+		GLuint data_layout = 2;
+		GLCall(glEnableVertexAttribArray(data_layout));					// size appart				// offset
+		// WHAT THE FUCK????? why do I have to use glVertexAttribIPointer????????? and not glVertexAttribPointer????????????????// who tf designed this
+		GLCall(glVertexAttribIPointer(data_layout, 1, GL_INT, sizeof(HighlightInstance), (const void *)offsetof(HighlightInstance, normal)));
+		GLCall(glVertexAttribDivisor(data_layout, 1)); // values are per instance
+	}
+
 	//////////////////////////// LOADING VAO FOR AXIS ////////////////////////////
 	GLCall(glGenVertexArrays(1, &this->VAO_axis));
 	GLCall(glBindVertexArray(this->VAO_axis));
@@ -276,11 +317,14 @@ Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &materialBuffer));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_viewport));
+	GLCall(glDeleteBuffers(1, &base_highlight_buffer));
+	GLCall(glDeleteBuffers(1, &VBO_highlight));
 	GLCall(glDeleteBuffers(1, &indirectBuffer));
 
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	GLCall(glDeleteVertexArrays(1, &VAO_axis));
 	GLCall(glDeleteVertexArrays(1, &VAO_viewport));
+	GLCall(glDeleteVertexArrays(1, &VAO_highlight));
 
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 	GLCall(glDeleteTextures(1, &lightingTexture));
@@ -509,49 +553,35 @@ void Renderer::drawLighting(const QuadContainer<Quad> &quads, const std::vector<
 
 // disabled for now
 void Renderer::drawSelectedBlock(const SelectedBlockInfo &selectedBlock, const glm::mat4 &projection, const glm::mat4 &view) {
-	return;
-	// VAO, VBO (except the data), FBO and chunk TBO are the same as in drawLighting, noit setting any of it!!!!!!!!!!!!!!!!! except vao and vbo
-	// in the future reorder draws, showAxis usually messes everything up
+	// GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+		// I got lazy, so still drawing a quad instance like normal, except through a different shader
+		// also a different VBO to not mess up the main one
+		GLCall(glBindVertexArray(this->VAO_highlight));
 
-		// GLCall(glBindVertexArray(this->VAO));
+		HighlightInstance highlightInstance = HighlightInstance(selectedBlock.getWorldPosition(), selectedBlock.normal);
 
-		// Quad quad = Quad(selectedBlock.position, selectedBlock.normal, selectedBlock.materialID, selectedBlock.chunkID);
-		// // printf("quad at %u %u %u material %d chunk %u normal %u \n", quad.getPosition().x, quad.getPosition().y, quad.getPosition().z, quad.getMaterialID(), quad.getChunkID(), quad.getNormal());
-		// GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
-		// GLCall(glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(Quad), &quad, GL_STATIC_DRAW));
+		// glm::vec3 a = highlightInstance.coords;
+		// printf("%f %f %f\n", a.x, a.y, a.z);
 
-		// // constexpr glm::mat4 model = glm::mat4(1.5f);
-		// // can be optimized
-		// glm::mat4 model;
-		// switch (selectedBlock.normal) {
-		// 	case 0:
-		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.02f, 0.0f));
-		// 		break;
-		// 	case 1:
-		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.02f, 0.0f));
-		// 		break;
-		// 	case 2:
-		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.02f));
-		// 		break;
-		// 	case 3:
-		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.02f));
-		// 		break;
-		// 	case 4:
-		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.02f, 0.0f, 0.0f));
-		// 		break;
-		// 	case 5:
-		// 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.02f, 0.0f, 0.0f));
-		// 		break;
-		// }
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->VBO_highlight));
+		GLCall(glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(SelectedBlockInfo), &highlightInstance, GL_STATIC_DRAW));
 
-		// highlightShader.use();
-		// highlightShader.setMat4("u_Model", model);
-		// highlightShader.setMat4("u_View", view);
-		// highlightShader.setMat4("u_Projection", projection);
-		// highlightShader.setInt("u_ChunkInfoTBO", CHUNKINFO_TEXTURE_BUFFER_SLOT);
-		// highlightShader.setFloat("u_BloomThreshold", bloomThreshold);
+		constexpr glm::mat4 model = glm::mat4(1.0f);
 
-		// GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1));
+		highlightShader.use();
+		highlightShader.setMat4("u_Model", model);
+		highlightShader.setMat4("u_View", view);
+		highlightShader.setMat4("u_Projection", projection);
+
+		// highlightShader.setMat3("u_NormalMatrix", glm::mat3(glm::transpose(glm::inverse(view * model))));
+
+		// bind the render buffer to this FBO (maybe this is missing actualy binding it, idk, but it gets regenerated automatically when screen is resized)
+		// glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);
+		// specify 2 attachments
+		// constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		// GLCall(glDrawBuffers(2, attachments));
+
+		GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1));
 }
 
 void Renderer::bloomBlur(int passes) {

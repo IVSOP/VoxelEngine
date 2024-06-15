@@ -29,9 +29,13 @@ public:
 	// lighting FBO into wich scene gets rendered normally, but bright colors are extracted for bloom
 	GLuint VAO, VAO_axis;
 	GLuint indirectBuffer;
-	GLuint base_vertexBuffer, // VBO for base vertex positions of a quad
+	GLuint base_vertexBuffer, // VBO for base vertex positions of a quad instance
 		   vertexBuffer,      // VBO for all other information, needs to be separate due to instancing
 		   vertexBuffer_axis; // VBO for axis vertices
+
+	GLuint VAO_highlight;
+	GLuint VBO_highlight, base_highlight_buffer;
+
 	Shader lightingShader, axisShader, highlightShader;
 	GLuint lightingFBO = 0, lightingFBODepthBuffer = 0;
 	GLuint lightingTexture = 0; // color atttachment 0, scene renders into this

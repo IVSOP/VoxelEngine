@@ -250,7 +250,7 @@ SelectedBlockInfo World::getSelectedBlock(const glm::vec3 &position, const glm::
 
 	}
 	// nothing found within range
-	return SelectedBlockInfo(-1, 0, 0, false, {});
+	return SelectedBlockInfo(-1, 0, 0, true, {});
 }
 
 void World::saveTo(std::ofstream &file) {

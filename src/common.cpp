@@ -29,3 +29,5 @@ const GLchar *readFromFile(const char *filepath) {
 
     exit(1);
 }
+
+

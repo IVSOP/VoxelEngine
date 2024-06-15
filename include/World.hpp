@@ -9,38 +9,6 @@
 
 // #include "zlib/zlib.h"
 
-#define WORLD_SIZE_X 16
-#define WORLD_SIZE_Y 16
-#define WORLD_SIZE_Z 16
-
-#define WORLD_SIZE_X_FLOAT static_cast<GLfloat>(WORLD_SIZE_X)
-#define WORLD_SIZE_Y_FLOAT static_cast<GLfloat>(WORLD_SIZE_Y)
-#define WORLD_SIZE_Z_FLOAT static_cast<GLfloat>(WORLD_SIZE_Z)
-
-#define MAX_X ((CHUNK_SIZE * (WORLD_SIZE_X / 2)) - 1)
-#define MAX_Y ((CHUNK_SIZE * (WORLD_SIZE_X / 2)) - 1)
-#define MAX_Z ((CHUNK_SIZE * (WORLD_SIZE_X / 2)) - 1)
-
-#define MIN_X ((-MAX_X) - 1)
-#define MIN_Y ((-MAX_Y) - 1)
-#define MIN_Z ((-MAX_Z) - 1)
-
-// normal {
-// 	0 - y (bottom)
-// 	1 + y (top)
-// 	2 - z (far)
-// 	3 + z (near)
-// 	4 - x (left)
-// 	5 + x (right)
-// }
-
-#define NORMAL_NEG_Y 0
-#define NORMAL_POS_Y 1
-#define NORMAL_NEG_Z 2
-#define NORMAL_POS_Z 3
-#define NORMAL_NEG_X 4
-#define NORMAL_POS_X 5
-
 struct World {
 	Chunk chunks[WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z]; // this order can be changed, need to test it for performance
 	std::vector<ChunkInfo> info; // [WORLD_SIZE_X][WORLD_SIZE_Y][WORLD_SIZE_Z];
@@ -65,37 +33,6 @@ struct World {
 	}
 
 	void buildData(const glm::vec3 &playerPosition);
-
-	// from the chunk's position in array, return its world position
-	constexpr glm::vec3 getChunkCoordsFloat(GLuint x, GLuint y, GLuint z) const {
-		return
-			glm::vec3( // make it so that [half][half][half] is roughly around (0,0,0)
-				(static_cast<GLfloat>(x) - WORLD_SIZE_X_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
-				(static_cast<GLfloat>(y) - WORLD_SIZE_Y_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE),
-				(static_cast<GLfloat>(z) - WORLD_SIZE_Z_FLOAT / 2.0f) * static_cast<GLfloat>(CHUNK_SIZE)
-			);
-	}
-
-	constexpr glm::ivec3 getChunkCoords(GLuint x, GLuint y, GLuint z) const {
-		return
-			glm::ivec3( // make it so that [half][half][half] is roughly around (0,0,0)
-				((static_cast<GLint>(x) - WORLD_SIZE_X / 2) * CHUNK_SIZE),
-				((static_cast<GLint>(y) - WORLD_SIZE_Y / 2) * CHUNK_SIZE),
-				((static_cast<GLint>(z) - WORLD_SIZE_Z / 2) * CHUNK_SIZE)
-			);
-	}
-
-	// same as other ones but uses chunk ID
-	constexpr glm::ivec3 getChunkCoordsByID(GLuint ID) { // const
-		// what the fuck?
-		GLuint x = ID / (WORLD_SIZE_X * WORLD_SIZE_Y);
-		GLuint idk = ID -  x * WORLD_SIZE_X * WORLD_SIZE_Y;
-		GLuint y = idk / WORLD_SIZE_X;
-		GLuint z = idk % WORLD_SIZE_X;
-
-		// xyz are now [x][y][z] where chunk is located. this means this is not very optimized but since everytthing is constexpr I trust the compiler will manage this
-		return getChunkCoords(x, y, z);
-	}
 
 	constexpr GLuint getChunkID(GLuint x, GLuint y, GLuint z) {
 		return (&chunks[x][y][z] - &chunks[0][0][0]);
@@ -165,7 +102,6 @@ struct World {
 		return chunk.getVoxelAt(pos);
 	}
 
-	// same as above, but it returns a SelectedBlockInfo so I don't have to get chunkID and position again
 	SelectedBlockInfo getBlockInfo(const glm::ivec3 &position);
 
 	constexpr float custom_mod (float value, float modulus) {
