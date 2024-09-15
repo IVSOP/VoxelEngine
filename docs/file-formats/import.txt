@@ -1,0 +1,21 @@
+the import file can represent either a world or some objects (so you can, for example, copy some building from one world to another)
+
+format:
+- header indicating the type (world or blueprint)
+- body, with the data
+
+
+for the case of a blueprint:
+- header containing uint32 x, y and z dimensions of the bounds of the blueprint
+- serialized array of the blocks themselves. I can tell what blocks go where using the xyz bounds and a determined traversal order
+
+world:
+header containing, for now,
+- serialized player
+	serialized camera
+- size of the world (for now, this is ignored. compiler is faster if size is pre-determined)
+- chunks serialized
+	for every chunk, number of bytes followed by compressed array of bytes
+
+the chunks are compressed as one huge array uzing zlib
+
